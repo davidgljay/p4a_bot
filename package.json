@@ -1,0 +1,25 @@
+{
+  "name": "p4a_bot",
+  "version": "1.0.0",
+  "description": "A set of scripts for managing relational data for Potlucks for Action",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidgljay/p4a_bot.git"
+  },
+  "author": "David Jay",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidgljay/p4a_bot/issues"
+  },
+  "homepage": "https://github.com/davidgljay/p4a_bot#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "googleapis": "^133.0.0"
+  }
+}
