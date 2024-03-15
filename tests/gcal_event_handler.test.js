@@ -1,11 +1,23 @@
+process.env.NOTION_TOKEN = 'mockNotionToken';
+process.env.EVENTS_DATABASE_ID = 'mockEventsDatabaseId';
+process.env.REGISTRATIONS_DATABASE_ID = 'mockRegistrationsDatabaseId';
+process.env.CONTACTS_DATABASE_ID = 'mockContactsDatabaseId';
+const mockNotionWrapper= {};
+jest.mock("../functions/apis/notion", () => {
+  return jest.fn().mockImplementation(() => mockNotionWrapper);
+});
 const NotionWrapper = require("../functions/apis/notion");
 const {
   handleEventUpdate,
   handleRegistration,
 } = require("../functions/handlers/gcal_event_handler");
 
+describe("glcal_event_handler", () => {
+  const notionClient = new NotionWrapper(process.env.NOTION_TOKEN);
+  
+
 describe("handleEventUpdate", () => {
-  const eventsDatabaseId = "YOUR_EVENTS_DATABASE_ID";
+  const eventsDatabaseId = "mockEventsDatabaseId";
   const event = {
     id: "Event Gcal ID",
     summary: "Event summary",
@@ -21,18 +33,19 @@ describe("handleEventUpdate", () => {
   };
 
   beforeEach(() => {
-    NotionWrapper.query = jest.fn();
-    NotionWrapper.update = jest.fn();
-    NotionWrapper.create = jest.fn();
+    mockNotionWrapper.query = jest.fn();
+    mockNotionWrapper.update = jest.fn();
+    mockNotionWrapper.create = jest.fn();
+    mockNotionWrapper.findOrCreate = jest.fn();
   });
 
   it("should call update function if NotionWrapper.query returns a result", async () => {
     const existingEvent = { id: "existingEventId" };
-    NotionWrapper.query.mockResolvedValue([existingEvent]);
+    mockNotionWrapper.query.mockResolvedValueOnce([existingEvent]);
 
     await handleEventUpdate(event);
 
-    expect(NotionWrapper.query).toHaveBeenCalledWith(
+    expect(notionClient.query).toHaveBeenCalledWith(
       eventsDatabaseId,
       expect.objectContaining({
         property: "gcalid",
@@ -41,7 +54,7 @@ describe("handleEventUpdate", () => {
         },
       })
     );
-    expect(NotionWrapper.update).toHaveBeenCalledWith(existingEvent.id, {
+    expect(notionClient.update).toHaveBeenCalledWith(existingEvent.id, {
       summary: event.summary,
       description: event.description,
       link: event.link,
@@ -49,16 +62,17 @@ describe("handleEventUpdate", () => {
       location: event.location,
       start: event.start,
       end: event.end,
+      gcalid: event.id,
     });
-    expect(NotionWrapper.create).not.toHaveBeenCalled();
+    expect(notionClient.create).not.toHaveBeenCalled();
   });
 
-  it("should call create function if NotionWrapper.query returns no results", async () => {
-    NotionWrapper.query.mockResolvedValue([]);
+  it("should call create function if notionClient.query returns no results", async () => {
+    notionClient.query.mockResolvedValueOnce([]);
 
     await handleEventUpdate(event);
 
-    expect(NotionWrapper.query).toHaveBeenCalledWith(
+    expect(notionClient.query).toHaveBeenCalledWith(
       eventsDatabaseId,
       expect.objectContaining({
         property: "gcalid",
@@ -67,7 +81,7 @@ describe("handleEventUpdate", () => {
         },
       })
     );
-    expect(NotionWrapper.create).toHaveBeenCalledWith(eventsDatabaseId, {
+    expect(notionClient.create).toHaveBeenCalledWith(eventsDatabaseId, {
       id: event.id,
       summary: event.summary,
       description: event.description,
@@ -76,15 +90,18 @@ describe("handleEventUpdate", () => {
       duration: event.duration,
       start: event.start,
       end: event.end,
+      gcalid: event.id,
     });
-    expect(NotionWrapper.update).not.toHaveBeenCalled();
+    expect(notionClient.update).not.toHaveBeenCalled();
   });
 });
 
 describe("handleRegistration", () => {
-  const registrationsDatabaseId = "YOUR_REGISTRATIONS_DATABASE_ID";
-  const contactsDatabaseId  = "YOUR_CONTACTS_DATABASE_ID";
+  const registrationsDatabaseId = "mockRegistrationsDatabaseId";
+  const contactsDatabaseId  = "mockContactsDatabaseId";
 
+
+  
   var event;
 
   beforeEach(() => {
@@ -94,20 +111,19 @@ describe("handleRegistration", () => {
       attendee_names: ["name1", "name2"],
       attendee_responses: ["response1", "response2"],
     };
-  
-    NotionWrapper.query = jest.fn();
-    NotionWrapper.update = jest.fn();
-    NotionWrapper.create = jest.fn();
-    NotionWrapper.findOrCreate = jest.fn();
+    mockNotionWrapper.query = jest.fn();
+    mockNotionWrapper.update = jest.fn();
+    mockNotionWrapper.create = jest.fn();
+    mockNotionWrapper.findOrCreate = jest.fn();
   });
 
   it("should not create or update if registration already exists and the response is the same", async () => {
     const existingRegistrations = [{ id: "existingRegistrationId" , email: "email1", response: "response1" }, { id: "existingRegistrationId2" , email: "email2", response: "response2" }];
-    NotionWrapper.query.mockResolvedValueOnce(existingRegistrations);
+    mockNotionWrapper.query.mockResolvedValueOnce(existingRegistrations);
 
     await handleRegistration(event);
 
-    expect(NotionWrapper.query).toHaveBeenCalledWith(
+    expect(mockNotionWrapper.query).toHaveBeenCalledWith(
       registrationsDatabaseId,
       expect.objectContaining({
         property: "event",
@@ -116,9 +132,9 @@ describe("handleRegistration", () => {
         },
       })
     );
-    expect(NotionWrapper.update).not.toHaveBeenCalled();
-    expect(NotionWrapper.create).not.toHaveBeenCalled();
-    expect(NotionWrapper.findOrCreate).not.toHaveBeenCalled();
+    expect(mockNotionWrapper.update).not.toHaveBeenCalled();
+    expect(mockNotionWrapper.create).not.toHaveBeenCalled();
+    expect(mockNotionWrapper.findOrCreate).not.toHaveBeenCalled();
   });
 
   it("should update if registration exists with different response", async () => {
@@ -126,11 +142,11 @@ describe("handleRegistration", () => {
       { id: "existingRegistrationId", email: "email1", response: "oldResponse"},
       { id: "existingRegistrationId2" , email: "email2", response: "response2" }
     ];
-    NotionWrapper.query.mockResolvedValue(existingRegistrations);
+    mockNotionWrapper.query.mockResolvedValue(existingRegistrations);
 
     await handleRegistration(event);
 
-    expect(NotionWrapper.query).toHaveBeenCalledWith(
+    expect(mockNotionWrapper.query).toHaveBeenCalledWith(
       registrationsDatabaseId,
       expect.objectContaining({
         property: "event",
@@ -139,24 +155,24 @@ describe("handleRegistration", () => {
         },
       })
     );
-    expect(NotionWrapper.update).toHaveBeenCalledWith(
+    expect(mockNotionWrapper.update).toHaveBeenCalledWith(
       existingRegistrations[0].id,
       {
         response: event.attendee_responses[0],
       }
     );
-    expect(NotionWrapper.create).not.toHaveBeenCalled();
-    expect(NotionWrapper.findOrCreate).not.toHaveBeenCalled();
+    expect(mockNotionWrapper.create).not.toHaveBeenCalled();
+    expect(mockNotionWrapper.findOrCreate).not.toHaveBeenCalled();
   });
 
   it("should find or create a contact and create a new registration if one doesn't exist", async () => {
     const newContact = { id: "newContactId" };
-    NotionWrapper.query.mockResolvedValue([]);
-    NotionWrapper.findOrCreate.mockResolvedValue(newContact);
+    mockNotionWrapper.query.mockResolvedValue([]);
+    mockNotionWrapper.findOrCreate.mockResolvedValue(newContact);
 
     await handleRegistration(event);
 
-    expect(NotionWrapper.query).toHaveBeenCalledWith(
+    expect(mockNotionWrapper.query).toHaveBeenCalledWith(
       registrationsDatabaseId,
       expect.objectContaining({
         property: "event",
@@ -165,13 +181,13 @@ describe("handleRegistration", () => {
         },
       })
     );
-    expect(NotionWrapper.update).not.toHaveBeenCalled();
-    expect(NotionWrapper.create).toHaveBeenCalledWith(registrationsDatabaseId, {
+    expect(mockNotionWrapper.update).not.toHaveBeenCalled();
+    expect(mockNotionWrapper.create).toHaveBeenCalledWith(registrationsDatabaseId, {
       user: newContact.id,
       event: event.id,
       response: event.attendee_responses[0],
     });
-    expect(NotionWrapper.findOrCreate).toHaveBeenCalledWith(
+    expect(mockNotionWrapper.findOrCreate).toHaveBeenCalledWith(
       contactsDatabaseId,
       expect.objectContaining({
         property: "email",
@@ -185,4 +201,5 @@ describe("handleRegistration", () => {
       }
     );
   });
+});
 });

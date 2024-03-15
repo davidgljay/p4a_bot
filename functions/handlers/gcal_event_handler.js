@@ -1,4 +1,7 @@
 const NotionWrapper = require('../apis/notion');
+require('dotenv').config();
+
+const notionClient = new NotionWrapper(process.env.NOTION_TOKEN);
 
 // Expects an object with the following:
 // {
@@ -15,9 +18,9 @@ const NotionWrapper = require('../apis/notion');
 //   "duration": "Event duration"
 // }
 
-const eventsDatabaseId = 'YOUR_EVENTS_DATABASE_ID'; // Replace with your actual database ID
-const registrationsDatabaseId = 'YOUR_REGISTRATIONS_DATABASE_ID'; // Replace with your actual database ID
-const contactsDatabaseId = 'YOUR_CONTACTS_DATABASE_ID'; // Replace with your actual database ID
+const eventsDatabaseId = process.env.EVENTS_DATABASE_ID; // Replace with your actual database ID
+const registrationsDatabaseId = process.env.REGISTRATIONS_DATABASE_ID; // Replace with your actual database ID
+const contactsDatabaseId = process.env.CONTACTS_DATABASE_ID; // Replace with your actual database ID
 
 // Function to check and create/update event in "events" database
 async function handleEventUpdate(event) {
@@ -30,24 +33,24 @@ async function handleEventUpdate(event) {
     }
 
     // Check if event already exists in "events" database
-    const results = await NotionWrapper.query(eventsDatabaseId, filter);
+    const results = await notionClient.query(eventsDatabaseId, filter);
 
     if (results.length > 0) {
         const existingEvent = results[0];
         // Update existing event
-        // TODO: handle matching with notion field IDs
-        await NotionWrapper.update(existingEvent.id, {
+        await notionClient.update(existingEvent.id, {
             summary: event.summary,
             description: event.description,
             link: event.link,
             duration: event.duration,
             location: event.location,
             start: event.start,
-            end: event.end
+            end: event.end,
+            gcalid: event.id
         });
     } else {
         // Create new event
-        await NotionWrapper.create(eventsDatabaseId, {
+        await notionClient.create(eventsDatabaseId, {
             id: event.id,
             summary: event.summary,
             description: event.description,
@@ -55,7 +58,8 @@ async function handleEventUpdate(event) {
             location: event.location,
             duration: event.duration,
             start: event.start,
-            end: event.end
+            end: event.end,
+            gcalid: event.id
         });
     }
 }
@@ -77,11 +81,11 @@ async function handleEventUpdate(event) {
 //         } //TODO: Is there a way to do this more efficiently through a big or filter?
 
 //         // Check if attendee already exists in "contacts" database
-//         const results = await NotionWrapper.query(contactsDatabaseId, filter);
+//         const results = await notionClient.query(contactsDatabaseId, filter);
 
 //         if (results.length === 0) {
 //             // Create new attendee
-//             await NotionWrapper.create(contactsDatabaseId, {
+//             await notionClient.create(contactsDatabaseId, {
 //                 email,
 //                 name
 //             });
@@ -103,7 +107,7 @@ async function handleRegistration(event) {
         }
 
     // Check if registration already exists in "registrations" database
-    const results = await NotionWrapper.query(registrationsDatabaseId, filter);
+    const results = await notionClient.query(registrationsDatabaseId, filter);
 
     let registeredEmails = new Set();
     for (let i = 0; i < results.length; i++) {
@@ -113,7 +117,7 @@ async function handleRegistration(event) {
             if (existingRegistration.email == email) {
                 registeredEmails.add(email);
                 if (existingRegistration.response !== event.attendee_responses[j]) {
-                    await NotionWrapper.update(existingRegistration.id, {
+                    await notionClient.update(existingRegistration.id, {
                         response: event.attendee_responses[j]
                     });
                 }
@@ -136,9 +140,9 @@ async function handleRegistration(event) {
                 email,
                 name: event.attendee_names[i]
             };
-            const contactRecord = await NotionWrapper.findOrCreate(contactsDatabaseId, filter, contact);
+            const contactRecord = await notionClient.findOrCreate(contactsDatabaseId, filter, contact);
             // Create new registration
-            await NotionWrapper.create(registrationsDatabaseId, {
+            await notionClient.create(registrationsDatabaseId, {
                 user: contactRecord.id,
                 event: event.id,
                 response: event.attendee_responses[i]
