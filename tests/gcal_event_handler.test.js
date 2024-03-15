@@ -1,19 +1,27 @@
-process.env.NOTION_TOKEN = 'mockNotionToken';
-process.env.EVENTS_DATABASE_ID = 'mockEventsDatabaseId';
-process.env.REGISTRATIONS_DATABASE_ID = 'mockRegistrationsDatabaseId';
-process.env.CONTACTS_DATABASE_ID = 'mockContactsDatabaseId';
+const test = require('firebase-functions-test')();
 const mockNotionWrapper= {};
 jest.mock("../functions/apis/notion", () => {
   return jest.fn().mockImplementation(() => mockNotionWrapper);
 });
+
+test.mockConfig( {
+  notion: {
+    TOKEN: 'TOKEN',
+    EVENTS_DATABASE_ID: 'mockEventsDatabaseId',
+    REGISTRATIONS_DATABASE_ID: 'mockRegistrationsDatabaseId',
+    CONTACTS_DATABASE_ID: 'mockContactsDatabaseId',
+  }
+});
+const functions = require('firebase-functions');
 const NotionWrapper = require("../functions/apis/notion");
 const {
   handleEventUpdate,
   handleRegistration,
 } = require("../functions/handlers/gcal_event_handler");
 
+
 describe("glcal_event_handler", () => {
-  const notionClient = new NotionWrapper(process.env.NOTION_TOKEN);
+  const notionClient = new NotionWrapper(functions.config().notion.TOKEN);
   
 
 describe("handleEventUpdate", () => {

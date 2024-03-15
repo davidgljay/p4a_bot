@@ -1,8 +1,3 @@
-const NotionWrapper = require("../apis/notion");
-require("dotenv").config();
-
-const notionClient = new NotionWrapper(process.env.NOTION_TOKEN);
-
 // Expects an object with the following:
 // {
 //  "id": "Event Gcal ID",
@@ -18,9 +13,14 @@ const notionClient = new NotionWrapper(process.env.NOTION_TOKEN);
 //   "duration": "Event duration"
 // }
 
-const eventsDatabaseId = process.env.EVENTS_DATABASE_ID;
-const registrationsDatabaseId = process.env.REGISTRATIONS_DATABASE_ID;
-const contactsDatabaseId = process.env.CONTACTS_DATABASE_ID;
+const NotionWrapper = require("../apis/notion");
+const functions = require('firebase-functions');
+
+const notionClient = new NotionWrapper(functions.config().notion.TOKEN);
+
+const eventsDatabaseId = functions.config().notion.EVENTS_DATABASE_ID;
+const registrationsDatabaseId = functions.config().notion.REGISTRATIONS_DATABASE_ID;
+const contactsDatabaseId = functions.config().notion.CONTACTS_DATABASE_ID;
 
 // Function to check and create/update event in "events" database
 async function handleEventUpdate(event) {
