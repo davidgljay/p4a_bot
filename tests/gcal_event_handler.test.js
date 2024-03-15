@@ -2,7 +2,7 @@ const NotionWrapper = require("../functions/apis/notion");
 const {
   handleEventUpdate,
   handleRegistration,
-} = require("../functions/gcal_event_handler");
+} = require("../functions/handlers/gcal_event_handler");
 
 describe("handleEventUpdate", () => {
   const eventsDatabaseId = "YOUR_EVENTS_DATABASE_ID";

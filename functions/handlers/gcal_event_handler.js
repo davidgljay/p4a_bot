@@ -1,4 +1,4 @@
-const NotionWrapper = require('./apis/notion');
+const NotionWrapper = require('../apis/notion');
 
 // Expects an object with the following:
 // {
