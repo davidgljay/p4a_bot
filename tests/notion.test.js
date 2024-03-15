@@ -28,7 +28,7 @@ describe("NotionWrapper", () => {
     notionWrapper.client = mockClient.Client();
   });
 
-  describe("searchDatabase", () => {
+  describe("query", () => {
     it("should return search results from the specified database", async () => {
       const databaseId = "YOUR_DATABASE_ID";
       const query = "search query";
@@ -36,7 +36,7 @@ describe("NotionWrapper", () => {
         results: [{ id: "test_restuls" }]
       });
 
-      const searchResults = await notionWrapper.searchDatabase(databaseId, query);
+      const searchResults = await notionWrapper.query(databaseId, query);
 
       // Assert that the search results are returned successfully
       expect(searchResults).toBeDefined();
@@ -44,11 +44,14 @@ describe("NotionWrapper", () => {
     });
   });
 
-  describe("getItemById", () => {
+  describe("get", () => {
     it("should return the item with the specified ID", async () => {
       const itemId = "YOUR_ITEM_ID";
+      notionWrapper.client.pages.retrieve.mockResolvedValue({
+        results: { id: itemId }
+      });
 
-      const item = await notionWrapper.getItemById(itemId);
+      const item = await notionWrapper.get(itemId);
 
       // Assert that the item is returned successfully
       expect(item).toBeDefined();
@@ -56,7 +59,7 @@ describe("NotionWrapper", () => {
     });
   });
 
-  describe("createItem", () => {
+  describe("create", () => {
     it("should create a new item in the specified database", async () => {
       const databaseId = "YOUR_DATABASE_ID";
       const properties = {
@@ -64,7 +67,7 @@ describe("NotionWrapper", () => {
         description: "This is a new item",
       };
 
-      const newItem = await notionWrapper.createItem(databaseId, properties);
+      const newItem = await notionWrapper.create(databaseId, properties);
 
       // Assert that the new item is created successfully
       expect(newItem).toBeDefined();

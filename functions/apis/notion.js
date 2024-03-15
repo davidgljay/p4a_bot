@@ -5,22 +5,17 @@ class NotionWrapper {
         this.client = new Client({ auth: token });
     }
 
-    async searchDatabase(databaseId, query) {
+    async query(databaseId, filter) {
         try {
             const response = await this.client.databases.query({
                 database_id: databaseId,
-                filter: {
-                    property: 'title',
-                    text: {
-                        contains: query
-                    }
-                }
+                filter
             });
 
             return response.results;
         } catch (error) {   
             if (error.code === APIErrorCode.ObjectNotFound) {
-                const response = [];
+                return [];
             } else {
             console.error('Error searching database:', error);
             throw error;
@@ -28,17 +23,17 @@ class NotionWrapper {
         }
     }
 
-    async getItemById(itemId) {
+    async get(itemId) {
         try {
             const response = await this.client.pages.retrieve({ page_id: itemId });
-            return response;
+            return response.results;
         } catch (error) {
             console.error('Error retrieving item:', error);
             throw error;
         }
     }
 
-    async createItem(databaseId, properties) {
+    async create(databaseId, properties) {
         try {
             const response = await this.client.pages.create({
                 parent: { database_id: databaseId },
@@ -52,12 +47,12 @@ class NotionWrapper {
         }
     }
 
-    async findOrCreateItem(databaseId, query, properties) {
+    async findOrCreate(databaseId, query, properties) {
         try {
-            const searchResults = await this.searchDatabase(databaseId, query);
+            const searchResults = await this.query(databaseId, query);
 
             if (searchResults.length > 0) {
-                return searchResults[0];
+                return searchResults.results[0];
             } else {
                 return this.createItem(databaseId, properties);
             }
@@ -67,7 +62,7 @@ class NotionWrapper {
         }
     }
 
-    async updateItemById(itemId, updates) {
+    async update(itemId, updates) {
         try {
             const response = await this.client.pages.update({
                 page_id: itemId,
@@ -81,12 +76,12 @@ class NotionWrapper {
         }
     }
 
-    async updateItemsByQuery(databaseId, query, updates) {
+    async updateByQuery(databaseId, query, updates) {
         try {
-            const searchResults = await this.searchDatabase(databaseId, query);
+            const searchResults = await this.query(databaseId, query);
 
             for (const item of searchResults) {
-                await this.updateItemById(item.id, updates);
+                await this.update(item.id, updates);
             }
         } catch (error) {
             console.error('Error updating items:', error);
