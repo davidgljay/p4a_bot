@@ -72,9 +72,14 @@ function createDatabases(parentPageId) {
         },
     };
 
-    notionWrapper.createDatabase(parentPageId, contactsSchema);
-    notionWrapper.createDatabase(parentPageId, eventsSchema);
-    notionWrapper.createDatabase(parentPageId, registrationsSchema);
+    const contactDB = notionWrapper.createDatabase(parentPageId, contactsSchema);
+    const eventsDB = notionWrapper.createDatabase(parentPageId, eventsSchema);
+    const registrationDB = notionWrapper.createDatabase(parentPageId, registrationsSchema);
+
+    return Promise.all([contactDB, eventsDB, registrationDB]).then((databases) => {
+        const [contacts, events, registrations] = databases;
+        return { contacts, events, registrations };
+    })
 }
 
 module.exports = createDatabases;
