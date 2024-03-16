@@ -1,6 +1,6 @@
 const notionWrapper = require('/apis/notion.js');
 
-function createDatabases(parentPageId) {
+function initializeNotion(parentPageId) {
     const contactsSchema = {
         title: 'Contacts',
         properties: {
@@ -82,4 +82,4 @@ function createDatabases(parentPageId) {
     })
 }
 
-module.exports = createDatabases;
+module.exports = initializeNotion;
