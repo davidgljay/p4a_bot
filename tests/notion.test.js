@@ -2,14 +2,18 @@ const NotionWrapper = require("../functions/apis/notion");
 
 describe("NotionWrapper", () => {
   let notionWrapper;
+  let mockClient;
 
   beforeEach(() => {
     // Mock @notionhq/client
-    let mockClient = {
+    mockClient = {
       Client: jest.fn().mockImplementation(() => ({
         databases: {
           query: jest.fn().mockResolvedValue({
             results: [],
+          }),
+          create: jest.fn().mockResolvedValue({
+            id: "NEW_DATABASE_ID",
           }),
         },
         pages: {
@@ -76,4 +80,38 @@ describe("NotionWrapper", () => {
   });
 
   // Add tests for other functions (findOrCreateItem, updateItemById, updateItemsByQuery) here
+
+  describe("createDatabase", () => {
+    it("should create a new database with the specified title and properties", async () => {
+      const parentId = "YOUR_PARENT_ID";
+      const title = "New Database";
+      const properties = {
+        property1: "Value 1",
+        property2: "Value 2",
+      };
+
+      const newDatabase = await notionWrapper.createDatabase(parentId, title, properties);
+
+      // Assert that the new database is created successfully
+      expect(notionWrapper.client.databases.create).toHaveBeenCalledWith({parent: {page_id:parentId}, title: [{text: {content: "New Database"}}], properties});
+      expect(newDatabase).toBeDefined();
+      expect(newDatabase.id).toEqual('NEW_DATABASE_ID');
+    });
+  });
+
+  describe("createChildPage", () => {
+    it("should create a new child page under the specified parent", async () => {
+      const parentId = "YOUR_PARENT_ID";
+      const properties = {
+        title: "Child Page",
+        description: "This is a child page",
+      };
+
+      const newChildPage = await notionWrapper.createChildPage(parentId, properties);
+
+      // Assert that the new child page is created successfully
+      expect(notionWrapper.client.pages.create).toHaveBeenCalledWith({parent: {page_id:parentId}, properties});
+      expect(newChildPage.id).toEqual("NEW_ITEM_ID");
+    });
+  });
 });

@@ -88,6 +88,35 @@ class NotionWrapper {
       throw error;
     }
   }
+
+  async createChildPage(parentId, properties) {
+    try {
+      const response = await this.client.pages.create({
+        parent: { page_id: parentId },
+        properties,
+      });
+      return response;
+    } catch (error) {
+      console.error("Error creating child page:", error);
+      throw error;
+    }
+  }
+
+  
+  async createDatabase(parentId, title, properties) {
+    try {
+      const response = await this.client.databases.create({
+        parent: { page_id: parentId },
+        title: [{ text: { content: title } }],
+        properties,
+      });
+      return response;
+    } catch (error) {
+      console.error("Error creating database:", error);
+      throw error;
+    }
+  }
+
 }
 
 module.exports = NotionWrapper;
