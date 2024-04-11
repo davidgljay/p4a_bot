@@ -16,17 +16,20 @@
 const NotionWrapper = require("../apis/notion");
 const functions = require('firebase-functions');
 
-const notionClient = new NotionWrapper(functions.config().notion.TOKEN);
+const notionClient = new NotionWrapper(functions.config().notion.token);
 
-const eventsDatabaseId = functions.config().notion.EVENTS_DATABASE_ID;
-const registrationsDatabaseId = functions.config().notion.REGISTRATIONS_DATABASE_ID;
-const contactsDatabaseId = functions.config().notion.CONTACTS_DATABASE_ID;
+const eventsDatabaseId = functions.config().notion.events_db.id;
+const registrationsDatabaseId = functions.config().notion.registrations_db.id;
+const contactsDatabaseId = functions.config().notion.contacts_db.id;
+const eventsFields = functions.config().notion.events_db.fields;
+const registrationFields = functions.config().notion.registrations_db.fields;
+const contactFields = functions.config().notion.contacts_db.fields;
 
 // Function to check and create/update event in "events" database
 async function handleEventUpdate(event) {
   const filter = {
     property: "gcalid",
-    text: {
+    rich_text: {
       equals: event.id,
     },
   };
@@ -38,27 +41,16 @@ async function handleEventUpdate(event) {
     const existingEvent = results[0];
     // Update existing event
     await notionClient.update(existingEvent.id, {
-      summary: event.summary,
-      description: event.description,
-      link: event.link,
-      duration: event.duration,
-      location: event.location,
-      start: event.start,
-      end: event.end,
-      gcalid: event.id,
+      [eventsFields.description]: event.description,
+      [eventsFields.date]: event.start,
+      [eventsFields.gcalid]: event.id,
     });
   } else {
     // Create new event
     await notionClient.create(eventsDatabaseId, {
-      id: event.id,
-      summary: event.summary,
-      description: event.description,
-      link: event.link,
-      location: event.location,
-      duration: event.duration,
-      start: event.start,
-      end: event.end,
-      gcalid: event.id,
+      [eventsFields.description]: event.description,
+      [eventsFields.date]: event.start,
+      [eventsFields.gcalid]: event.id,
     });
   }
 }
@@ -68,7 +60,7 @@ async function handleEventUpdate(event) {
 async function handleRegistration(event) {
   const filter = {
     property: "event",
-    text: {
+    rich_text: {
       equals: event.id,
     },
   };
@@ -85,7 +77,7 @@ async function handleRegistration(event) {
         registeredEmails.add(email);
         if (existingRegistration.response !== event.attendee_responses[j]) {
           await notionClient.update(existingRegistration.id, {
-            response: event.attendee_responses[j],
+            [registrationsFields.status]: event.attendee_responses[j],
           });
         }
       }
@@ -104,15 +96,15 @@ async function handleRegistration(event) {
         },
       };
       const contact = {
-        email,
-        name: event.attendee_names[i],
+        [contactFields.email]: email,
+        [contactFields.name]: event.attendee_names[i],
       };
       const contactRecord = await notionClient.findOrCreate(contactsDatabaseId, filter, contact);
       // Create new registration
       await notionClient.create(registrationsDatabaseId, {
-        user: contactRecord.id,
-        event: event.id,
-        response: event.attendee_responses[i],
+        [registrationFields.contact]: contactRecord.id,
+        [registrationFields.event]: event.id,
+        [registrationFields.status]: event.attendee_responses[i],
       });
     }
   }
