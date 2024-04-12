@@ -16,7 +16,13 @@ const {
   handleEventUpdate,
   handleRegistration} = require("./handlers/gcal_event_handler");
 const initializeNotion = require("./handlers/notion_db_init");
-const { on } = require('supertest/lib/test');
+const { checkUpcomingEvents, getEventRegistrations } = require("./handlers/email_response_handler");
+
+exports.prep_emails = onRequest(async (req, res) => {
+  const events = await checkUpcomingEvents(7);
+  const registrations = await getEventRegistrations(events[0].id);
+  res.status(200).send(JSON.stringify(registrations));
+});
 
 exports.gcal_event = onRequest(async (req, res) => {
   if (req.method !== "POST") {
