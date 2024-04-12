@@ -18,7 +18,7 @@ const {
 const initializeNotion = require("./handlers/notion_db_init");
 const { on } = require('supertest/lib/test');
 
-exports.gcal_event = onRequest((req, res) => {
+exports.gcal_event = onRequest(async (req, res) => {
   if (req.method !== "POST") {
     logger.error("Invalid request method", {structuredData: true});
     return res.status(400).send("Invalid request method");
@@ -34,8 +34,8 @@ exports.gcal_event = onRequest((req, res) => {
 
   const event = req.body;
   try {
-    handleEventUpdate(event);
-    handleRegistration(event);
+    await handleEventUpdate(event);
+    await handleRegistration(event);
   } catch (error) {
     logger.error("Error handling event and registration", error);
     return res.status(500).send("Error handling event and registration");
