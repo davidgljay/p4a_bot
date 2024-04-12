@@ -12,7 +12,7 @@
     "test": "jest --verbose --watch"
   },
   "engines": {
-    "node": "18"
+    "node": "20"
   },
   "main": "index.js",
   "dependencies": {

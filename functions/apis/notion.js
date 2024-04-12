@@ -52,9 +52,9 @@ class NotionWrapper {
       const searchResults = await this.query(databaseId, query);
 
       if (searchResults.length > 0) {
-        return searchResults.results[0];
+        return searchResults[0];
       } else {
-        return this.createItem(databaseId, properties);
+        return this.create(databaseId, properties);
       }
     } catch (error) {
       console.error("Error finding or creating item:", error);
