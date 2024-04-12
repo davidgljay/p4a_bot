@@ -86,23 +86,21 @@ async function handleRegistration(event) {
   const registeredEmails = new Set();
   for (let i = 0; i < results.length; i++) {
     const existingRegistration = results[i];
-    for (let j = 0; j < event.attendee_emails.length; j++) {
-      const email = event.attendee_emails[j];
+    for (let j = 0; j < event.attendees.length; j++) {
+      const {email, responseStatus} = event.attendees[j];
       if (existingRegistration.properties.Email.rollup.array[0].email == email) {
         registeredEmails.add(email);
-        if (existingRegistration.response !== event.attendee_responses[j]) {
-          await notionClient.update(existingRegistration.id, {
-            [registrationFields.status]: {select: {id: registrationFields.status_options[event.attendee_responses[j]]}},
-          });
-        }
+        await notionClient.update(existingRegistration.id, {
+          [registrationFields.status]: {select: {id: registrationFields.status_options[responseStatus]}},
+        });
       }
     }
   }
 
   console.log('Registered Emails', registeredEmails)
   // Add registrations that aren't yet in the DB.
-  for (let i = 0; i < event.attendee_emails.length; i++) {
-    const email = event.attendee_emails[i];
+  for (let i = 0; i < event.attendees.length; i++) {
+    var {email, displayName, responseStatus} = event.attendees[i];
     if (!registeredEmails.has(email)) {
       // Check if contact already exists in "contacts" database, create it if it doesn't
       const filter = {
@@ -111,16 +109,18 @@ async function handleRegistration(event) {
           equals: email,
         },
       };
+      displayName = displayName || "";
       const contact = {
         [contactFields.email]: {email: email},
-        [contactFields.name]: {title: [{text: {content:event.attendee_names[i]}}]},
+        [contactFields.name]: {title: [{text: {content: displayName}}]},
       };
       const contactRecord = await notionClient.findOrCreate(contactsDatabaseId, filter, contact);
       // Create new registration
       await notionClient.create(registrationsDatabaseId, {
+        [registrationFields.title]: {title: [{text: {content: displayName + " - " + event.summary}}]},
         [registrationFields.contact]: {relation: [{id: contactRecord.id}]},
         [registrationFields.event]: {relation:[{id: eventResults[0].id}]},
-        [registrationFields.status]: {select: {id: registrationFields.status_options[event.attendee_responses[i]]}},
+        [registrationFields.status]: {select: {id: registrationFields.status_options[responseStatus]}},
       });
     }
   }
