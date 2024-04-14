@@ -1,0 +1,21 @@
+emails:
+  - days: 7
+    hours: 10
+    subject: "🎉 Potlucks for Change on {{date}}! What do you want to bring?"
+    body: > 
+      "This is the body of the first email."
+  - days: 1
+    hours: 10
+    subject: "Can you make it to Potluck for Change tomorrow?"
+    body: >
+      "<p>Hi {{fname}},</p>
+      <p>Just want confirm that you can make it to Potluck for Change tomorrow. We're excited to see you there!</p>
+      <div style="display:flex"><button><a href='yes_link'>I can make it!</a></button><button><a href="no_link">Apologies, something's come up</a></div>
+      <p>Thanks!</p>"
+  - days: 0
+    hours: 2
+    subject: "Excited to see you at Potluck for Change! Here are directions."
+    body: >
+      "This is the body of the third email."
+  - days: 0
+    hours: -14
