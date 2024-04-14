@@ -14,7 +14,8 @@ const expectedToken = `Bearer ${functions.config().custom.auth_token}`;
 
 const {
   handleEventUpdate,
-  handleRegistration} = require("./handlers/gcal_event_handler");
+  handleRegistration,
+  handleGcalEvent} = require("./handlers/gcal_event_handler");
 const initializeNotion = require("./handlers/notion_db_init");
 const { checkUpcomingEvents, getEventRegistrations } = require("./handlers/email_response_handler");
 
@@ -38,10 +39,10 @@ exports.gcal_event = onRequest(async (req, res) => {
     return res.status(403).send("Unauthorized");
   }
 
-  const event = req.body;
+  const event = req.body.event;
+  const client_org = req.body.client_org;
   try {
-    await handleEventUpdate(event);
-    await handleRegistration(event);
+    await handleGcalEvent(event, client_org);
   } catch (error) {
     logger.error("Error handling event and registration", error);
     return res.status(500).send("Error handling event and registration");

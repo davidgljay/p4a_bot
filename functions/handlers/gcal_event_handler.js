@@ -16,31 +16,42 @@
 const NotionWrapper = require("../apis/notion");
 const functions = require('firebase-functions');
 
-const notionClient = new NotionWrapper(functions.config().notion.token);
-
-const eventsDatabaseId = functions.config().notion.events_db.id;
-const registrationsDatabaseId = functions.config().notion.registrations_db.id;
-const contactsDatabaseId = functions.config().notion.contacts_db.id;
-const eventsFields = functions.config().notion.events_db.fields;
-const registrationFields = functions.config().notion.registrations_db.fields;
-const contactFields = functions.config().notion.contacts_db.fields;
+async function handleGcalEvent(event, client_org) {
+  const notionClient = new NotionWrapper(functions.config().notion[client_org].token);
+  const config = {
+    eventsDatabaseId: functions.config().notion[client_org].events_db.id,
+    registrationsDatabaseId: functions.config().notion[client_org].registrations_db.id,
+    contactsDatabaseId: functions.config().notion[client_org].contacts_db.id,
+    eventsFields: functions.config().notion[client_org].events_db.fields,
+    registrationFields: functions.config().notion[client_org].registrations_db.fields,
+    contactFields: functions.config().notion[client_org].contacts_db.fields,
+  };
+  try {
+    await handleEventUpdate(event, config, notionClient);
+    await handleRegistration(event, config, notionClient);
+  } catch (error) {
+    console.error("Error handling event and registration", error);
+    throw error;
+  }
+  console.log("Event and registration handled successfully", event);
+}
 
 // Function to check and create/update event in "events" database
-async function handleEventUpdate(event) {
+async function handleEventUpdate(event, config, notionClient) {
   const filter = {
-    property: eventsFields.gcalid,
+    property: config.eventsFields.gcalid,
     rich_text: {
       equals: event.id,
     },
   };
 
   // Check if event already exists in "events" database
-  const results = await notionClient.query(eventsDatabaseId, filter);
+  const results = await notionClient.query(config.eventsDatabaseId, filter);
   const properties = {
-    [eventsFields.title]: {title: [{text: {content:event.summary}}]},
-    [eventsFields.description]: {rich_text: [{text: {content: event.description,}}]},
-    [eventsFields.date]: {date: {start: event.start["Event Begins"]}},
-    [eventsFields.gcalid]:  {rich_text: [{text: {content: event.id}}]},
+    [config.eventsFields.title]: {title: [{text: {content:event.summary}}]},
+    [config.eventsFields.description]: {rich_text: [{text: {content: event.description,}}]},
+    [config.eventsFields.date]: {date: {start: event.start["Event Begins"]}},
+    [config.eventsFields.gcalid]:  {rich_text: [{text: {content: event.id}}]},
   }
 
   if (results.length > 0) {
@@ -52,26 +63,26 @@ async function handleEventUpdate(event) {
   } else {
     console.log("Creating new event", event.id)
     // Create new event
-    await notionClient.create(eventsDatabaseId, properties);
+    await notionClient.create(config.eventsDatabaseId, properties);
   }
 }
 
 
 // Function to check and create/update registrations in "registrations" database
-async function handleRegistration(event) {
+async function handleRegistration(event, config, notionClient) {
 
   const eventFilter = {
-    property: eventsFields.gcalid,
+    property: config.eventsFields.gcalid,
     rich_text: {
       equals: event.id,
     },
   };
 
   // Check if event already exists in "events" database
-  const eventResults = await notionClient.query(eventsDatabaseId, eventFilter);
+  const eventResults = await notionClient.query(config.eventsDatabaseId, eventFilter);
 
   const registrationFilter = {
-    property: registrationFields.event_gcalid,
+    property: config.registrationFields.event_gcalid,
     rollup: {
       any: {
         rich_text: {
@@ -82,7 +93,7 @@ async function handleRegistration(event) {
   };
 
   // Check if registration already exists in "registrations" database
-  const results = await notionClient.query(registrationsDatabaseId, registrationFilter);
+  const results = await notionClient.query(config.registrationsDatabaseId, registrationFilter);
   const registeredEmails = new Set();
   for (let i = 0; i < results.length; i++) {
     const existingRegistration = results[i];
@@ -91,7 +102,7 @@ async function handleRegistration(event) {
       if (existingRegistration.properties.Email.rollup.array[0].email == email) {
         registeredEmails.add(email);
         await notionClient.update(existingRegistration.id, {
-          [registrationFields.status]: {select: {id: registrationFields.status_options[responseStatus]}},
+          [config.registrationFields.status]: {select: {id: config.registrationFields.status_options[responseStatus]}},
         });
       }
     }
@@ -104,23 +115,23 @@ async function handleRegistration(event) {
     if (!registeredEmails.has(email)) {
       // Check if contact already exists in "contacts" database, create it if it doesn't
       const filter = {
-        property: contactFields.email,
+        property: config.contactFields.email,
         email: {
           equals: email,
         },
       };
       displayName = displayName || "";
       const contact = {
-        [contactFields.email]: {email: email},
-        [contactFields.name]: {title: [{text: {content: displayName}}]},
+        [config.contactFields.email]: {email: email},
+        [config.contactFields.name]: {title: [{text: {content: displayName}}]},
       };
       const contactRecord = await notionClient.findOrCreate(contactsDatabaseId, filter, contact);
       // Create new registration
-      await notionClient.create(registrationsDatabaseId, {
-        [registrationFields.title]: {title: [{text: {content: displayName + " - " + event.summary}}]},
-        [registrationFields.contact]: {relation: [{id: contactRecord.id}]},
-        [registrationFields.event]: {relation:[{id: eventResults[0].id}]},
-        [registrationFields.status]: {select: {id: registrationFields.status_options[responseStatus]}},
+      await notionClient.create(config.registrationsDatabaseId, {
+        [config.registrationFields.title]: {title: [{text: {content: displayName + " - " + event.summary}}]},
+        [config.registrationFields.contact]: {relation: [{id: contactRecord.id}]},
+        [config.registrationFields.event]: {relation:[{id: eventResults[0].id}]},
+        [config.registrationFields.status]: {select: {id: config.registrationFields.status_options[responseStatus]}},
       });
     }
   }
@@ -129,4 +140,5 @@ async function handleRegistration(event) {
 module.exports = {
   handleEventUpdate,
   handleRegistration,
+  handleGcalEvent
 };
