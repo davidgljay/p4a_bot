@@ -125,7 +125,7 @@ async function handleRegistration(event, config, notionClient) {
         [config.contactFields.email]: {email: email},
         [config.contactFields.name]: {title: [{text: {content: displayName}}]},
       };
-      const contactRecord = await notionClient.findOrCreate(contactsDatabaseId, filter, contact);
+      const contactRecord = await notionClient.findOrCreate(config.contactsDatabaseId, filter, contact);
       // Create new registration
       await notionClient.create(config.registrationsDatabaseId, {
         [config.registrationFields.title]: {title: [{text: {content: displayName + " - " + event.summary}}]},
