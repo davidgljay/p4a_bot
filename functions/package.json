@@ -9,7 +9,8 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "jest --verbose --watch"
+    "test": "jest --verbose --watch",
+    "syncconfig": "node syncconfig.js"
   },
   "engines": {
     "node": "20"
