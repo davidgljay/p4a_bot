@@ -14,17 +14,17 @@
 // }
 
 const NotionWrapper = require("../apis/notion");
-const functions = require('firebase-functions');
+const clientConfig = require('../config/client_config.js');
 
 async function handleGcalEvent(event, client_org) {
-  const notionClient = new NotionWrapper(functions.config().notion[client_org].token);
+  const notionClient = new NotionWrapper(clientConfig[client_org].token);
   const config = {
-    eventsDatabaseId: functions.config().notion[client_org].events_db.id,
-    registrationsDatabaseId: functions.config().notion[client_org].registrations_db.id,
-    contactsDatabaseId: functions.config().notion[client_org].contacts_db.id,
-    eventsFields: functions.config().notion[client_org].events_db.fields,
-    registrationFields: functions.config().notion[client_org].registrations_db.fields,
-    contactFields: functions.config().notion[client_org].contacts_db.fields,
+    eventsDatabaseId: clientConfig[client_org].events_db.id,
+    registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
+    contactsDatabaseId: clientConfig[client_org].contacts_db.id,
+    eventsFields: clientConfig[client_org].events_db.fields,
+    registrationFields: clientConfig[client_org].registrations_db.fields,
+    contactFields: clientConfig[client_org].contacts_db.fields,
   };
   try {
     await handleEventUpdate(event, config, notionClient);
@@ -33,7 +33,6 @@ async function handleGcalEvent(event, client_org) {
     console.error("Error handling event and registration", error);
     throw error;
   }
-  console.log("Event and registration handled successfully", event);
 }
 
 // Function to check and create/update event in "events" database
@@ -97,8 +96,9 @@ async function handleRegistration(event, config, notionClient) {
   const registeredEmails = new Set();
   for (let i = 0; i < results.length; i++) {
     const existingRegistration = results[i];
-    for (let j = 0; j < event.attendees.length; j++) {
-      const {email, responseStatus} = event.attendees[j];
+    for (let j = 0; j < event.attendee_emails.split(",").length; j++) {
+      const email = event.attendee_emails.split(",")[j];
+      const responseStatus = event.attendee_statuses.split(",")[j];
       if (existingRegistration.properties.Email.rollup.array[0].email == email) {
         registeredEmails.add(email);
         await notionClient.update(existingRegistration.id, {
@@ -108,10 +108,11 @@ async function handleRegistration(event, config, notionClient) {
     }
   }
 
-  console.log('Registered Emails', registeredEmails)
   // Add registrations that aren't yet in the DB.
-  for (let i = 0; i < event.attendees.length; i++) {
-    var {email, displayName, responseStatus} = event.attendees[i];
+  for (let i = 0; i < event.attendee_emails.split(",").length; i++) {
+    const email = event.attendee_emails.split(",")[i];
+    const responseStatus = event.attendee_statuses.split(",")[i];
+    const displayName = event.attendee_names.split(",")[i];
     if (!registeredEmails.has(email)) {
       // Check if contact already exists in "contacts" database, create it if it doesn't
       const filter = {

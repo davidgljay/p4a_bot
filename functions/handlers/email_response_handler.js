@@ -4,15 +4,18 @@ const functions = require('firebase-functions');
 const fs = require('fs');
 const yaml = require('js-yaml');
 
-const notionClient = new NotionWrapper(functions.config().notion.p4c.token);
+// const notionClient = new NotionWrapper(functions.config().notion.p4c.token);
 
-const eventsDatabaseId = functions.config().notion.p4c.events_db.id;
-const registrationsDatabaseId = functions.config().notion.p4c.registrations_db.id;
-const eventsFields = functions.config().notion.p4c.events_db.fields;
-const registrationFields = functions.config().notion.p4c.registrations_db.fields;
+// const eventsDatabaseId = functions.config().notion.p4c.events_db.id;
+// const registrationsDatabaseId = functions.config().notion.p4c.registrations_db.id;
+// const eventsFields = functions.config().notion.p4c.events_db.fields;
+// const registrationFields = functions.config().notion.p4c.registrations_db.fields;
+
+
 
 // Function to check for events coming up in N days
 async function checkUpcomingEvents(days, hours) {
+
     try {
         // return a string for a date N days from now
         // TODO: Because one of these emails is sent two hours before we need to return all events w/in the next 2 days and then identify by number of hours

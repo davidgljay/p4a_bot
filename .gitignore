@@ -9,6 +9,7 @@ lerna-debug.log*
 
 # Runtime configuration
 .runtimeconfig.json
+client_config.js
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

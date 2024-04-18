@@ -10,28 +10,25 @@
 const functions = require('firebase-functions');
 const {onRequest} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
-const expectedToken = `Bearer ${functions.config().custom.auth_token}`;
+const expectedToken = `Bearer ${process.env.AUTH_TOKEN}`;
 
-const {
-  handleEventUpdate,
-  handleRegistration,
-  handleGcalEvent} = require("./handlers/gcal_event_handler");
+const {handleGcalEvent} = require("./handlers/gcal_event_handler");
 const initializeNotion = require("./handlers/notion_db_init");
 const { checkUpcomingEvents, getEventRegistrations } = require("./handlers/email_response_handler");
 
-exports.prep_emails = onRequest(async (req, res) => {
+exports.prepemails = onRequest(async (req, res) => {
   const events = await checkUpcomingEvents(7);
   const registrations = await getEventRegistrations(events[0].id);
   res.status(200).send(JSON.stringify(registrations));
 });
 
-exports.gcal_event = onRequest(async (req, res) => {
+exports.gcalevent = onRequest(async (req, res) => {
   if (req.method !== "POST") {
     logger.error("Invalid request method", {structuredData: true});
     return res.status(400).send("Invalid request method");
   }
 
-  const authToken = req.headers["authorization"];
+  const authToken = req.headers["Authorization"];
 
 
   if (authToken !== expectedToken) {
@@ -52,7 +49,7 @@ exports.gcal_event = onRequest(async (req, res) => {
   res.status(200).send("Success");
 });
 
-exports.initialize_notion = onRequest((req, res) => {
+exports.initializenotion = onRequest((req, res) => {
   if (req.method !== "POST") {
     logger.error("Invalid request method", {structuredData: true});
     return res.status(400).send("Invalid request method");

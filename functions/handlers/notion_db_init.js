@@ -1,8 +1,8 @@
 const NotionWrapper = require('../apis/notion.js');
-const functions = require('firebase-functions');
-const notionClient = new NotionWrapper(functions.config().notion.token);
+const clientConfig = require('../config/client_config.js');
 
-function initializeNotion(parentPageId) {
+function initializeNotion(parentPageId, client_org) {
+    const notionClient = new NotionWrapper(clientConfig[client_org].token);
     const contactsSchema = {
             email: {
                 type: 'email',
