@@ -28,7 +28,7 @@ exports.gcalevent = onRequest(async (req, res) => {
     return res.status(400).send("Invalid request method");
   }
 
-  const authToken = req.headers["Authorization"];
+  const authToken = req.headers["authorization"];
 
 
   if (authToken !== expectedToken) {

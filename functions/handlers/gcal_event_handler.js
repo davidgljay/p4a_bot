@@ -112,7 +112,7 @@ async function handleRegistration(event, config, notionClient) {
   for (let i = 0; i < event.attendee_emails.split(",").length; i++) {
     const email = event.attendee_emails.split(",")[i];
     const responseStatus = event.attendee_statuses.split(",")[i];
-    const displayName = event.attendee_names.split(",")[i];
+    const displayName = event.attendee_names.split(",")[i] || "";
     if (!registeredEmails.has(email)) {
       // Check if contact already exists in "contacts" database, create it if it doesn't
       const filter = {
@@ -121,7 +121,6 @@ async function handleRegistration(event, config, notionClient) {
           equals: email,
         },
       };
-      displayName = displayName || "";
       const contact = {
         [config.contactFields.email]: {email: email},
         [config.contactFields.name]: {title: [{text: {content: displayName}}]},
