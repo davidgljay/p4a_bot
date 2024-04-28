@@ -14,12 +14,17 @@ const expectedToken = `Bearer ${process.env.AUTH_TOKEN}`;
 
 const {handleGcalEvent} = require("./handlers/gcal_event_handler");
 const initializeNotion = require("./handlers/notion_db_init");
-const { checkUpcomingEvents, getEventRegistrations } = require("./handlers/email_response_handler");
+const { sendScheduledEmails } = require("./handlers/email_response_handler");
 
 exports.prepemails = onRequest(async (req, res) => {
-  const events = await checkUpcomingEvents(7);
-  const registrations = await getEventRegistrations(events[0].id);
-  res.status(200).send(JSON.stringify(registrations));
+  try {
+    const emails = await sendScheduledEmails(req.body.client_org);
+    res.status(200).send(emails);
+  }
+  catch (error) {
+    logger.error("Error preparing emails", error);
+    res.status(500).send("Error preparing emails: " + error.message);
+  }
 });
 
 exports.gcalevent = onRequest(async (req, res) => {

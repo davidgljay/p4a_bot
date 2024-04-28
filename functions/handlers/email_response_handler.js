@@ -4,13 +4,12 @@ const functions = require('firebase-functions');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const clientConfig = require('../config/client_config.js');
+const { event } = require("firebase-functions/v1/analytics");
 
-
-
-// Function to check for events coming up in a certain number of days and hours
-async function checkUpcomingEvents(days, hours, client_org) {
-    const notionClient = new NotionWrapper(clientConfig[client_org].token);
+async function sendScheduledEmails(client_org) {
+    const templates = yaml.load(fs.readFileSync('config/event_email.yaml', 'utf8'));
     const config = {
+        notionClient: new NotionWrapper(clientConfig[client_org].token),
         eventsDatabaseId: clientConfig[client_org].events_db.id,
         registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
         contactsDatabaseId: clientConfig[client_org].contacts_db.id,
@@ -18,7 +17,20 @@ async function checkUpcomingEvents(days, hours, client_org) {
         registrationFields: clientConfig[client_org].registrations_db.fields,
         contactFields: clientConfig[client_org].contacts_db.fields,
       };
+      const emails = [];
+      for (const template of templates.emails) {
+        const events = await checkUpcomingEvents(template.days, template.hours, config);
+        const registrations = [];
+        for (const event of events) {
+          registrations.push(await getEventRegistrations(event, config)); 
+        }
+        emails.concat(prepEmailsfromRegistrations(registrations, event, template, template.days, template.hours));
+      }
+      return emails;
+}
 
+// Function to check for events coming up in a certain number of days and hours
+async function checkUpcomingEvents(days, hours, config) {
     try {
         // return a string for a date N days and M hours from now
         const date = new Date();
@@ -45,7 +57,7 @@ async function checkUpcomingEvents(days, hours, client_org) {
                 }
             ]
         };
-        const events = await notionClient.query(config.eventsDatabaseId, filter);
+        const events = await config.notionClient.query(config.eventsDatabaseId, filter);
         // Perform any necessary logic with the events
         const cleanedEvents = [];
         for (const rawEvent of events) {
@@ -69,21 +81,21 @@ async function checkUpcomingEvents(days, hours, client_org) {
 }
 
 // Function to return registrations for events
-async function getEventRegistrations(eventId) {
+async function getEventRegistrations(event, config) {
+
     const filter = {
-        property: registrationFields["event"],
+        property: config.registrationFields["event"],
         relation: {
-            contains: eventId
+            contains: event.id
         }
     };
     try {
-        const registrations = await notionClient.query(registrationsDatabaseId, filter);
+        const registrations = await config.notionClient.query(config.registrationsDatabaseId, filter);
         // Perform any necessary logic with the registrations
         const emails = [];
         for (const registration of registrations) {
-            console.log('Registration:', registration)
-            const fname = registration.properties.Name.title[0].text.content || 'Friend'
-            emails.push({email: registration.properties.Email.rollup.array[0].email, status: registration.properties.Status.select.name, fname: registration.properties.Name.title[0].text.content});
+            const fname = /[^ ]+/.exec(registration.properties.Name.formula.string) || ['Friend'];
+            emails.push({email: registration.properties.Email.rollup.array[0].email, status: registration.properties.Status.select.name, fname:fname[0]});
         }
         return emails;
     } catch (error) {
@@ -94,7 +106,7 @@ async function getEventRegistrations(eventId) {
 }
 
 function prepEmailsfromRegistrations(registrations, event, templates, days) {
-    for (registration in registrations) {
+    for (const registration of registrations) {
         // Send email to registration.email with template
         const body = templates[days][registration.status].body
             .replace['{{email}}', registration.email]
@@ -111,13 +123,9 @@ function prepEmailsfromRegistrations(registrations, event, templates, days) {
     }
 }
 
-async function sendScheduledEmails() {
-
-
-}
-
 module.exports = {
     checkUpcomingEvents,
     getEventRegistrations,
-    prepEmailsfromRegistrations
+    prepEmailsfromRegistrations,
+    sendScheduledEmails
 };
