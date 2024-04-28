@@ -3,42 +3,61 @@ const NotionWrapper = require("../apis/notion");
 const functions = require('firebase-functions');
 const fs = require('fs');
 const yaml = require('js-yaml');
-
-// const notionClient = new NotionWrapper(functions.config().notion.p4c.token);
-
-// const eventsDatabaseId = functions.config().notion.p4c.events_db.id;
-// const registrationsDatabaseId = functions.config().notion.p4c.registrations_db.id;
-// const eventsFields = functions.config().notion.p4c.events_db.fields;
-// const registrationFields = functions.config().notion.p4c.registrations_db.fields;
+const clientConfig = require('../config/client_config.js');
 
 
 
-// Function to check for events coming up in N days
-async function checkUpcomingEvents(days, hours) {
+// Function to check for events coming up in a certain number of days and hours
+async function checkUpcomingEvents(days, hours, client_org) {
+    const notionClient = new NotionWrapper(clientConfig[client_org].token);
+    const config = {
+        eventsDatabaseId: clientConfig[client_org].events_db.id,
+        registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
+        contactsDatabaseId: clientConfig[client_org].contacts_db.id,
+        eventsFields: clientConfig[client_org].events_db.fields,
+        registrationFields: clientConfig[client_org].registrations_db.fields,
+        contactFields: clientConfig[client_org].contacts_db.fields,
+      };
 
     try {
-        // return a string for a date N days from now
-        // TODO: Because one of these emails is sent two hours before we need to return all events w/in the next 2 days and then identify by number of hours
+        // return a string for a date N days and M hours from now
         const date = new Date();
         date.setDate(date.getDate() + days);
-        const dateString = date.toISOString().split('T')[0];
+        date.setHours(date.getHours() + hours);
+        const dateString = date.toISOString();
+        const hourLaterDate = new Date(date)
+        hourLaterDate.setHours(date.getHours() + 1);
+        const hourLaterDateString = hourLaterDate.toISOString();
         console.log('Checking events for date:', dateString);
         const filter = {
-            property: eventsFields["date"],
-            date: {
-                "equals": dateString
-            }
+            "and": [
+                {
+                  "property": config.eventsFields["date"],
+                  "date": {
+                    "on_or_after": dateString
+                  }
+                },
+                {
+                  "property": config.eventsFields["date"],
+                  "date": {
+                    "on_or_before": hourLaterDateString
+                  }
+                }
+            ]
         };
-        const events = await notionClient.query(eventsDatabaseId, filter);
+        const events = await notionClient.query(config.eventsDatabaseId, filter);
         // Perform any necessary logic with the events
         const cleanedEvents = [];
-        for (rawEvent in events) {
+        for (const rawEvent of events) {
+            console.log(rawEvent.properties.Title.title[0].text.content)
             const event = {
                 id: rawEvent.id,
                 title: rawEvent.properties.Title.title[0].text.content,
                 date: rawEvent.properties.Date.date.start,
-                location: rawEvent.properties.Location.rich_text[0].text.content,
             };
+            if (rawEvent.properties.Location) {
+                event.location = rawEvent.properties.Location.rich_text[0].plain_text;
+            }
             cleanedEvents.push(event);
         }
         return cleanedEvents;
