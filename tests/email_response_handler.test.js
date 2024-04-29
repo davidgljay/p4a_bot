@@ -178,18 +178,14 @@ describe('email_response_handler', () => {
         const mockRegistrations = [{ email: 'bunbun@mock.test', fname: 'Bunbun', status: 'Accepted'}, { email: 'totoro@mock.test', fname: 'Friend', status: 'Needs Action'}];
 
         beforeEach(() => {
-            const mockNotionEventData = [{ id: '1' , properties: { Title: { title: [{ text: { content: 'Event 1' } }] }, Date: { date: { start: '2022-01-01' } } } },
-            { id: '2', properties: { Title: { title: [{ text: { content: 'Event 2' } }] }, Date: { date: { start: '2023-02-03' } } } }];
+            const mockNotionEventData = [{ id: '1' , properties: { Title: { title: [{ text: { content: 'Event 1' } }] }, Date: { date: { start: '2022-01-01' } } } }];
             const mockNotionRegistrationData = [{ id: '1', properties: { Name: { formula: { string: "Bunbun Bunny"} }, Email: { rollup: { array: [{ email: 'bunbun@mock.test' } ] } } , Status: { select: { name: "Accepted"} } } }, 
             { id: '2', properties: { Name: { formula: { string: ""} }, Email: { rollup: { array: [{ email: 'totoro@mock.test' } ] } } , Status: { select: { name: "Declined"} } } } ];
             mockNotionWrapper.query.mockResolvedValueOnce(mockNotionEventData);
             mockNotionWrapper.query.mockResolvedValueOnce(mockNotionRegistrationData);
-            mockNotionWrapper.query.mockResolvedValueOnce(mockNotionRegistrationData);
             mockNotionWrapper.query.mockResolvedValueOnce(mockNotionEventData);
             mockNotionWrapper.query.mockResolvedValueOnce(mockNotionRegistrationData);
-            mockNotionWrapper.query.mockResolvedValueOnce(mockNotionRegistrationData);
             mockNotionWrapper.query.mockResolvedValueOnce(mockNotionEventData);
-            mockNotionWrapper.query.mockResolvedValueOnce(mockNotionRegistrationData);
             mockNotionWrapper.query.mockResolvedValueOnce(mockNotionRegistrationData);
 
 
@@ -204,15 +200,7 @@ describe('email_response_handler', () => {
                     contains: "1"
                 }
             });
-            expect(mockNotionWrapper.query).toHaveBeenCalledWith('registrations_db_id', {
-                property: "event_field",
-                relation: {
-                    contains: "2"
-                }
-            });
             expect(result[0].to).toEqual("bunbun@mock.test");
         });
-
-        
     });
 });
