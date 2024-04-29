@@ -1,11 +1,13 @@
 emails:
   - days: 7
     hours: 10
+    status: "Accepted"
     subject: "🎉 Potlucks for Change on {{date}}! What do you want to bring?"
     body: > 
       "This is the body of the first email."
   - days: 1
     hours: 10
+    status: "Accepted"
     subject: "Can you make it to Potluck for Change tomorrow?"
     body: >
       "<p>Hi {{fname}},</p>
@@ -14,8 +16,7 @@ emails:
       <p>Thanks!</p>"
   - days: 0
     hours: 2
+    status: "Accepted"
     subject: "Excited to see you at Potluck for Change! Here are directions."
     body: >
       "This is the body of the third email."
-  - days: 0
-    hours: -14
