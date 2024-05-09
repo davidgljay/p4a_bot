@@ -94,11 +94,14 @@ async function handleRegistration(event, config, notionClient) {
   // Check if registration already exists in "registrations" database
   const results = await notionClient.query(config.registrationsDatabaseId, registrationFilter);
   const registeredEmails = new Set();
+  const emails = event.attendee_emails.split(",");
+  const responseStatuses = event.attendee_statuses.split(",");
+  const displayNames = event.attendee_names.split(",");
   for (let i = 0; i < results.length; i++) {
     const existingRegistration = results[i];
-    for (let j = 0; j < event.attendee_emails.split(",").length; j++) {
-      const email = event.attendee_emails.split(",")[j];
-      const responseStatus = event.attendee_statuses.split(",")[j];
+    for (let j = 0; j < emails.length; j++) {
+      const email = emails[j];
+      const responseStatus = responseStatuses[j];
       if (existingRegistration.properties.Email.rollup.array[0].email == email) {
         registeredEmails.add(email);
         await notionClient.update(existingRegistration.id, {
@@ -109,10 +112,10 @@ async function handleRegistration(event, config, notionClient) {
   }
 
   // Add registrations that aren't yet in the DB.
-  for (let i = 0; i < event.attendee_emails.split(",").length; i++) {
-    const email = event.attendee_emails.split(",")[i];
-    const responseStatus = event.attendee_statuses.split(",")[i];
-    const displayName = event.attendee_names.split(",")[i] || "";
+  for (let i = 0; i < emails.length; i++) {
+    const email = emails[i];
+    const responseStatus = responseStatuses[i];
+    const displayName = displayNames[i] || "";
     if (!registeredEmails.has(email)) {
       // Check if contact already exists in "contacts" database, create it if it doesn't
       const filter = {
