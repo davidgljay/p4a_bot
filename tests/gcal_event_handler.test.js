@@ -22,16 +22,47 @@ const {
 
 describe("glcal_event_handler", () => {
   const notionClient = new NotionWrapper(functions.config().notion.TOKEN);
+
+  const config = {
+    eventsDatabaseId: 'eventsDatabaseId',
+    registrationsDatabaseId: 'registrationsDatabaseId',
+    contactsDatabaseId: 'contactsDatabaseId',
+    eventsFields: {
+      title: 'title',
+      description: 'description',
+      date: 'date',
+      gcalid: 'gcalid',
+    },
+    registrationFields: {
+      "status": "status",
+      "event": "event",
+      "contact": "contact",
+      "title": "title",
+      "event_gcalid": "event_gcalid",
+      "status_options": {
+        "accepted": "accepted",
+        "needsAction": "needAction",
+        "tentative": "tentative",
+        "declined": "declined"
+      }
+
+    },
+    contactFields: {
+      "registrations": "registrations",
+      "email": "email",
+      "name": "name"
+    },
+  
+}
   
 
 describe("handleEventUpdate", () => {
-  const eventsDatabaseId = "mockEventsDatabaseId";
   const event = {
     id: "Event Gcal ID",
     summary: "Event summary",
     location: "Event location",
     description: "Event description",
-    start: "Event start time",
+    start: {"Event Begins" : "Event start time"},
     end: "Event end time",
     attendee_emails: ["email1", "email2"],
     attendee_names: ["name1", "name2"],
@@ -39,6 +70,7 @@ describe("handleEventUpdate", () => {
     link: "Event link",
     duration: "Event duration",
   };
+  
 
   beforeEach(() => {
     mockNotionWrapper.query = jest.fn();
@@ -51,26 +83,22 @@ describe("handleEventUpdate", () => {
     const existingEvent = { id: "existingEventId" };
     mockNotionWrapper.query.mockResolvedValueOnce([existingEvent]);
 
-    await handleEventUpdate(event);
+    await handleEventUpdate(event, config, notionClient);
 
     expect(notionClient.query).toHaveBeenCalledWith(
-      eventsDatabaseId,
+      "eventsDatabaseId",
       expect.objectContaining({
         property: "gcalid",
-        text: {
+        rich_text: {
           equals: event.id,
         },
       })
     );
     expect(notionClient.update).toHaveBeenCalledWith(existingEvent.id, {
-      summary: event.summary,
-      description: event.description,
-      link: event.link,
-      duration: event.duration,
-      location: event.location,
-      start: event.start,
-      end: event.end,
-      gcalid: event.id,
+      "title": { "title": [{ "text": { "content": event.summary}}]},
+      "description": { "rich_text": [{"text": { "content": event.description}}]},
+      "date": { "date": { "start": "Event start time"}},
+      "gcalid": {"rich_text": [{ "text": { "content": event.id}}]},
     });
     expect(notionClient.create).not.toHaveBeenCalled();
   });
@@ -78,27 +106,22 @@ describe("handleEventUpdate", () => {
   it("should call create function if notionClient.query returns no results", async () => {
     notionClient.query.mockResolvedValueOnce([]);
 
-    await handleEventUpdate(event);
+    await handleEventUpdate(event, config, notionClient);
 
     expect(notionClient.query).toHaveBeenCalledWith(
-      eventsDatabaseId,
+      "eventsDatabaseId",
       expect.objectContaining({
         property: "gcalid",
-        text: {
+        rich_text: {
           equals: event.id,
         },
       })
     );
-    expect(notionClient.create).toHaveBeenCalledWith(eventsDatabaseId, {
-      id: event.id,
-      summary: event.summary,
-      description: event.description,
-      link: event.link,
-      location: event.location,
-      duration: event.duration,
-      start: event.start,
-      end: event.end,
-      gcalid: event.id,
+    expect(notionClient.create).toHaveBeenCalledWith("eventsDatabaseId", {
+      "title": { "title": [{ "text": { "content": event.summary}}]},
+      "description": { "rich_text": [{"text": { "content": event.description}}]},
+      "date": { "date": { "start": "Event start time"}},
+      "gcalid": {"rich_text": [{ "text": { "content": event.id}}]},
     });
     expect(notionClient.update).not.toHaveBeenCalled();
   });
@@ -115,9 +138,9 @@ describe("handleRegistration", () => {
   beforeEach(() => {
     event = {
       id: "Event Gcal ID",
-      attendee_emails: ["email1", "email2"],
-      attendee_names: ["name1", "name2"],
-      attendee_responses: ["response1", "response2"],
+      attendee_emails: "[email1, email2]",
+      attendee_names: "[name1, name2]",
+      attendee_statuses: "[response1, response2]",
     };
     mockNotionWrapper.query = jest.fn();
     mockNotionWrapper.update = jest.fn();
@@ -126,19 +149,22 @@ describe("handleRegistration", () => {
   });
 
   it("should not create or update if registration already exists and the response is the same", async () => {
-    const existingRegistrations = [{ id: "existingRegistrationId" , email: "email1", response: "response1" }, { id: "existingRegistrationId2" , email: "email2", response: "response2" }];
-    mockNotionWrapper.query.mockResolvedValueOnce(existingRegistrations);
+    const contactRecords = [{ id: "contactId", email: "email1", name: "name1" }];
+    mockNotionWrapper.findOrCreate.mockResolvedValue(contactRecords);
+    const existingRegistrations = [{ id: "existingRegistrationId" , "properties": {"Email": {"rollup": { "array": ["email1"]}}, response: "response1"} }, { id: "existingRegistrationId2" , "properties": {"Email": {"rollup": { "array": ["email2"]}}, response: "response2"} }];
+    mockNotionWrapper.query.mockResolvedValue(existingRegistrations);
 
-    await handleRegistration(event);
+    await handleRegistration(event, config, notionClient);
 
     expect(mockNotionWrapper.query).toHaveBeenCalledWith(
-      registrationsDatabaseId,
+      "registrationsDatabaseId",
       expect.objectContaining({
-        property: "event",
-        text: {
-          equals: event.id,
+        property: "event_gcalid",
+        rollup: {
+          any: {
+            rich_text: { equals: "Event Gcal ID",}
         },
-      })
+      }})
     );
     expect(mockNotionWrapper.update).not.toHaveBeenCalled();
     expect(mockNotionWrapper.create).not.toHaveBeenCalled();
