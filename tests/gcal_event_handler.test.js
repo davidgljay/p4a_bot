@@ -43,7 +43,9 @@ describe("glcal_event_handler", () => {
         "accepted": "accepted",
         "needsAction": "needAction",
         "tentative": "tentative",
-        "declined": "declined"
+        "declined": "declined",
+        "response1": "response1",
+        "response2": "response2",
       }
 
     },
@@ -138,9 +140,9 @@ describe("handleRegistration", () => {
   beforeEach(() => {
     event = {
       id: "Event Gcal ID",
-      attendee_emails: "[email1, email2]",
-      attendee_names: "[name1, name2]",
-      attendee_statuses: "[response1, response2]",
+      attendee_emails: "email1,email2",
+      attendee_names: "name1,name2",
+      attendee_statuses: "response1,response2",
     };
     mockNotionWrapper.query = jest.fn();
     mockNotionWrapper.update = jest.fn();
@@ -151,7 +153,7 @@ describe("handleRegistration", () => {
   it("should not create or update if registration already exists and the response is the same", async () => {
     const contactRecords = [{ id: "contactId", email: "email1", name: "name1" }];
     mockNotionWrapper.findOrCreate.mockResolvedValue(contactRecords);
-    const existingRegistrations = [{ id: "existingRegistrationId" , "properties": {"Email": {"rollup": { "array": ["email1"]}}, response: "response1"} }, { id: "existingRegistrationId2" , "properties": {"Email": {"rollup": { "array": ["email2"]}}, response: "response2"} }];
+    const existingRegistrations = [{ id: "existingRegistrationId" , "properties": {"Email": {"rollup": { "array": [{"email": "email1"}]}}, "Status": {"select": { "name": "response1"}}} }, { id: "existingRegistrationId2" , "properties": {"Email": {"rollup": { "array": [{"email": "email2"}]}},  "Status": {"select": { "name": "response2"}}}} ];
     mockNotionWrapper.query.mockResolvedValue(existingRegistrations);
 
     await handleRegistration(event, config, notionClient);
@@ -173,26 +175,31 @@ describe("handleRegistration", () => {
 
   it("should update if registration exists with different response", async () => {
     const existingRegistrations = [
-      { id: "existingRegistrationId", email: "email1", response: "oldResponse"},
-      { id: "existingRegistrationId2" , email: "email2", response: "response2" }
+      { id: "existingRegistrationId" , "properties": {"Email": {"rollup": { "array": [{"email": "email1"}]}}, "Status": {"select": { "name": "response2"}}} }, 
+      { id: "existingRegistrationId2" , "properties": {"Email": {"rollup": { "array": [{"email": "email2"}]}},  "Status": {"select": { "name": "response2"}}}} 
     ];
+
     mockNotionWrapper.query.mockResolvedValue(existingRegistrations);
 
-    await handleRegistration(event);
+    await handleRegistration(event, config, notionClient);
 
     expect(mockNotionWrapper.query).toHaveBeenCalledWith(
-      registrationsDatabaseId,
+      "registrationsDatabaseId",
       expect.objectContaining({
-        property: "event",
-        text: {
-          equals: event.id,
+        property: "event_gcalid",
+        rollup: {
+          any: {
+            rich_text: {
+              equals: event.id,
+            }
+          }
         },
       })
     );
     expect(mockNotionWrapper.update).toHaveBeenCalledWith(
       existingRegistrations[0].id,
       {
-        response: event.attendee_responses[0],
+        status: { select: { id: "response1" } },
       }
     );
     expect(mockNotionWrapper.create).not.toHaveBeenCalled();
@@ -201,37 +208,43 @@ describe("handleRegistration", () => {
 
   it("should find or create a contact and create a new registration if one doesn't exist", async () => {
     const newContact = { id: "newContactId" };
-    mockNotionWrapper.query.mockResolvedValue([]);
+    mockNotionWrapper.query.mockResolvedValueOnce([event]);
+    mockNotionWrapper.query.mockResolvedValueOnce([]);
     mockNotionWrapper.findOrCreate.mockResolvedValue(newContact);
 
-    await handleRegistration(event);
+    await handleRegistration(event, config, notionClient);
 
     expect(mockNotionWrapper.query).toHaveBeenCalledWith(
-      registrationsDatabaseId,
+      "registrationsDatabaseId",
       expect.objectContaining({
-        property: "event",
-        text: {
-          equals: event.id,
+        property: "event_gcalid",
+        rollup: {
+          any: {
+            rich_text: {
+              equals: event.id,
+            }
+          }
         },
       })
     );
     expect(mockNotionWrapper.update).not.toHaveBeenCalled();
-    expect(mockNotionWrapper.create).toHaveBeenCalledWith(registrationsDatabaseId, {
-      user: newContact.id,
-      event: event.id,
-      response: event.attendee_responses[0],
+    expect(mockNotionWrapper.create).toHaveBeenCalledWith("registrationsDatabaseId", {
+      contact: { relation: [ {id: "newContactId"}]},
+      event: { relation: [{ id: event.id}]},
+      status: { select: { id: "response1"}},
+      title: { title: [{ text: { content: "name1 - undefined"}}]},
     });
     expect(mockNotionWrapper.findOrCreate).toHaveBeenCalledWith(
-      contactsDatabaseId,
+      "contactsDatabaseId",
       expect.objectContaining({
         property: "email",
-        text: {
-          equals: event.attendee_emails[0],
+        email: {
+          equals: "email1",
         },
       }),
       {
-        email: event.attendee_emails[0],
-        name: event.attendee_names[0],
+        email: { email: "email1"},
+        name: {title: [{text: {content:"name1"}}]},
       }
     );
   });

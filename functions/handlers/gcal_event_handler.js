@@ -104,6 +104,9 @@ async function handleRegistration(event, config, notionClient) {
       const responseStatus = responseStatuses[j];
       if (existingRegistration.properties.Email.rollup.array[0].email == email) {
         registeredEmails.add(email);
+        if (existingRegistration.properties.Status.select.name == responseStatus) {
+          continue;
+        }
         await notionClient.update(existingRegistration.id, {
           [config.registrationFields.status]: {select: {id: config.registrationFields.status_options[responseStatus]}},
         });
