@@ -93,6 +93,7 @@ async function handleRegistration(event, config, notionClient) {
 
   // Check if registration already exists in "registrations" database
   const results = await notionClient.query(config.registrationsDatabaseId, registrationFilter);
+  console.log("Got registrations", results)
   const registeredEmails = new Set();
   const emails = event.attendee_emails.split(",");
   const responseStatuses = event.attendee_statuses.split(",");
@@ -104,7 +105,7 @@ async function handleRegistration(event, config, notionClient) {
       const responseStatus = responseStatuses[j];
       if (existingRegistration.properties.Email.rollup.array[0].email == email) {
         registeredEmails.add(email);
-        if (existingRegistration.properties.Status.select.name == responseStatus) {
+        if (existingRegistration.properties.Status.select.id == config.registrationFields.status_options[responseStatus]) {
           continue;
         }
         await notionClient.update(existingRegistration.id, {

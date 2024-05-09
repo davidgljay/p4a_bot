@@ -153,7 +153,7 @@ describe("handleRegistration", () => {
   it("should not create or update if registration already exists and the response is the same", async () => {
     const contactRecords = [{ id: "contactId", email: "email1", name: "name1" }];
     mockNotionWrapper.findOrCreate.mockResolvedValue(contactRecords);
-    const existingRegistrations = [{ id: "existingRegistrationId" , "properties": {"Email": {"rollup": { "array": [{"email": "email1"}]}}, "Status": {"select": { "name": "response1"}}} }, { id: "existingRegistrationId2" , "properties": {"Email": {"rollup": { "array": [{"email": "email2"}]}},  "Status": {"select": { "name": "response2"}}}} ];
+    const existingRegistrations = [{ id: "existingRegistrationId" , "properties": {"Email": {"rollup": { "array": [{"email": "email1"}]}}, "Status": {"select": { "id": "response1", "name": "response1"}}} }, { id: "existingRegistrationId2" , "properties": {"Email": {"rollup": { "array": [{"email": "email2"}]}},  "Status": {"select": { "id": "response2",  "name": "response2"}}}} ];
     mockNotionWrapper.query.mockResolvedValue(existingRegistrations);
 
     await handleRegistration(event, config, notionClient);
