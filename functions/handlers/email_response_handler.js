@@ -1,6 +1,7 @@
 
 const NotionWrapper = require('../apis/notion');
 const functions = require('firebase-functions');
+const moment = require('momentjs')
 const fs = require('fs');
 const path = require('path');
 const clientConfig = require('../config/client_config.js');
@@ -53,10 +54,15 @@ async function checkUpcomingEvents(days, hours, config) {
         // Perform any necessary logic with the events
         const cleanedEvents = [];
         for (const rawEvent of events) {
+            const host_name = rawEvent.properties.Host_Name.rollup.array.reduce((c, a, i, s) =>  (i == s.length -1) ? c.rich_text[0].text.content + ' and ' + a : c + ', ' + a)
             const event = {
                 id: rawEvent.id,
                 title: rawEvent.properties.Title.title[0].text.content,
                 date: rawEvent.properties.Date.date.start,
+                location: rawEvent.properties.Location.rich_text[0].text.content,
+                host_name: host_name,
+                parking_info: rawEvent.properties.Parking_Info.rich_text[0].text.content,
+                transit_info: rawEvent.properties.Transit_Info.rich_text[0].text.content,
             };
             if (rawEvent.properties.Location) {
                 event.location = rawEvent.properties.Location.rich_text[0].plain_text;
@@ -107,14 +113,24 @@ function prepEmailsfromRegistrations(registrations, event, template) {
         if (template.status != registration.status) {
             continue;
         }
+        const weekday = moment(event.start_time).format('dddd')
+        const month_day = moment(event.start_time).format('MMMM Do')
+        const start_time = moment(event.start_time).format('h:mm a')
         const body = template.body
             .replace('{{email}}', registration.email)
             .replace('{{fname}}', registration.fname)
-            .replace('{{event_name}}', event.title)
-            .replace('{{event_date}}', event.date)
-            .replace('{{event_location}}', event.location);
+            .replace('{{title}}', event.title)
+            .replace('{{weekday}}', weekday)
+            .replace('{{month_day}}', month_day)
+            .replace('{{start_time}}', start_time)
+            .replace('{{event_location}}', event.location)
+            .replace('{{host_name}}', event.host_name)
+            .replace('{{parking_info}}', event.parking_info)
+            .replace('{{transit_info}}', event.transit_info)
+            .replace('{{host_phone}}', evnet.host_phone)
+
         const subject = template.subject
-            .replace('{{event_name}}', event.title);
+            .replace('{{title}}', event.title);
         emails.push({
             to: registration.email,
             subject,

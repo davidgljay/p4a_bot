@@ -2,9 +2,25 @@ emails:
   - days: 7
     hours: 10
     status: "Accepted"
-    subject: "🎉 Potlucks for Change on {{date}}! What do you want to bring?"
+    subject: "Upcoming Potlucks for Change Dinner – See you next week!"
     body: > 
-      "This is the body of the first email."
+      "Hi {{fname}},
+        I hope this email finds you well! I’m just reaching out to remind you of the Potlucks for Change dinner happening this {weekday}, {{month_day}}. We’re all set to welcome you at {{address}} at {{start_time}}.
+        Here’s a quick recap of the evening:
+        Theme: {{title}}
+        Time: {{start_time}}, {{weekday}} {{month_day}} (We’ll start with some appetizers and get to know each other!)
+        Address: {{address}}
+        What to bring: Sign up here to share the dish or drinks you would like to contribute to the evening.
+        We’re looking forward to an evening of warm conversation, delicious food, and actionable ideas on how we can collectively support reproductive freedom.
+        A couple of quick reminders:
+        If you have any dietary restrictions or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. Using this link.
+        Parking is available at {{parking_info}}, and the venue is {{transit_info}}.
+        Feel free to reach out {{host_phone}}  if you have any questions or if there’s anything I can do to make your experience more enjoyable.
+        See you soon at the dinner table for an evening of impactful dialogue and community building!
+        Warm regards,
+        {{host_name}}
+        {{host_org}}
+        {{host_phone}}"
   - days: 1
     hours: 10
     status: "Accepted"
