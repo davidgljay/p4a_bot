@@ -1,7 +1,7 @@
 
 const NotionWrapper = require('../apis/notion');
 const functions = require('firebase-functions');
-const moment = require('momentjs')
+const moment = require('moment')
 const fs = require('fs');
 const path = require('path');
 const clientConfig = require('../config/client_config.js');
