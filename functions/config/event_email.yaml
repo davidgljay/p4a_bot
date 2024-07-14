@@ -4,32 +4,95 @@ emails:
     status: "Accepted"
     subject: "Upcoming Potlucks for Change Dinner – See you next week!"
     body: > 
-      "Hi {{fname}},
-        I hope this email finds you well! I’m just reaching out to remind you of the Potlucks for Change dinner happening this {weekday}, {{month_day}}. We’re all set to welcome you at {{address}} at {{start_time}}.
-        Here’s a quick recap of the evening:
-        Theme: {{title}}
-        Time: {{start_time}}, {{weekday}} {{month_day}} (We’ll start with some appetizers and get to know each other!)
-        Address: {{address}}
-        What to bring: Sign up here to share the dish or drinks you would like to contribute to the evening.
-        We’re looking forward to an evening of warm conversation, delicious food, and actionable ideas on how we can collectively support reproductive freedom.
-        A couple of quick reminders:
-        If you have any dietary restrictions or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. Using this link.
-        Parking is available at {{parking_info}}, and the venue is {{transit_info}}.
-        Feel free to reach out {{host_phone}}  if you have any questions or if there’s anything I can do to make your experience more enjoyable.
-        See you soon at the dinner table for an evening of impactful dialogue and community building!
-        Warm regards,
-        {{host_name}}
-        {{host_org}}
-        {{host_phone}}"
+      "<p>Hi {{fname}},</p>
+        <p>I hope this email finds you well! I’m just reaching out to remind you of the Potlucks for Change dinner happening this {weekday}, {{month_day}}. We’re all set to welcome you at {{address}} at {{start_time}}.
+        Here’s a quick recap of the evening:</p>
+        <p>
+        <b>Theme</b>: {{title}}</br>
+        <b>Time</b>: {{start_time}}, {{weekday}} {{month_day}} (We’ll start with some appetizers and get to know each other!)</br>
+        <b>Address</b>: {{address}}</br>
+        <b>What to bring</b>: <a href=\"\" target=\"_blank\">Sign up here</a> to share the dish or drinks you would like to contribute to the evening.</p>
+        <p>We’re looking forward to an evening of warm conversation, delicious food, and actionable ideas on how we can collectively support reproductive freedom.
+        A couple of quick reminders:</p>
+        <ul>
+        <li>If you have any dietary restrictions or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. Using <a href=\"\" target=\"
+        _blank\">this link</a>.</li>
+        <li>Parking is available at {{parking_info}}, and the venue is {{transit_info}}.</li>
+        <li>Feel free to reach out {{host_phone}}  if you have any questions or if there’s anything I can do to make your experience more enjoyable.</li>
+        </ul>
+        See you soon at the dinner table for an evening of impactful dialogue and community building!</p>
+        <p>Warm regards,</p>
+        {{host_name}}</br>
+        {{host_org}}</br>
+        {{host_phone}}</br>"
   - days: 1
     hours: 10
     status: "Accepted"
-    subject: "Can you make it to Potluck for Change tomorrow?"
+    subject: "Upcoming Potlucks for Change Dinner – See you Tomorrow!"
     body: >
       "<p>Hi {{fname}},</p>
-      <p>Just want confirm that you can make it to Potluck for Change tomorrow. We're excited to see you there!</p>
-      <div style="display:flex"><button><a href='yes_link'>I can make it!</a></button><button><a href="no_link">Apologies, something's come up</a></div>
-      <p>Thanks!</p>"
+        <p>Super excited for the Potlucks for Change dinner happening tomorrow {{weekday}}, {{month_day}}. We’ll see you at {{event_location}} at {{start_time}}. 
+        Here’s a quick recap of the evening:</p>
+        <b>Theme</b>: {{title}}</br>
+        <b>Time</b>: {{start_time}}, {{weekday}} {{month_day}} (We’ll start with some appetizers and get to know each other!)</br>
+        <b>Address</b>: {{event_location}}</br>
+        <p>We’re looking forward to an evening of warm conversation, delicious food, and actionable ideas on how we can collectively support reproductive freedom.
+        Please confirm you can still attend:</p>
+        <div style=\"display:flex; justify-content:center; width: 100%\">
+            <a style=\"background-color: #2ea44f;
+              border: 1px solid rgba(27, 31, 35, .15);
+              border-radius: 6px;
+              box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+              box-sizing: border-box;
+              color: #fff;
+              cursor: pointer;
+              font-size: 14px;
+              font-weight: 600;
+              line-height: 20px;
+              padding: 6px 16px;
+              position: relative;
+              text-align: center;
+              text-decoration: none;
+              user-select: none;
+              -webkit-user-select: none;
+              touch-action: manipulation;
+              vertical-align: middle;
+              white-space: nowrap; margin-right: 20px\" href='yes_link'>I can make it!</a>
+            <a style=\"background-color: #848484;
+              border: 1px solid rgba(27, 31, 35, .15);
+              border-radius: 6px;
+              box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+              box-sizing: border-box;
+              color: #fff;
+              cursor: pointer;
+              font-size: 14px;
+              font-weight: 600;
+              line-height: 20px;
+              padding: 6px 16px;
+              position: relative;
+              text-align: center;
+              text-decoration: none;
+              user-select: none;
+              -webkit-user-select: none;
+              touch-action: manipulation;
+              vertical-align: middle;
+              white-space: nowrap;\" href=\"no_link\">Apologies, something's come up</a>
+              </div>
+        <p>A couple of quick reminders:</p>
+        <ul>
+        <li>If you have any dietary restrictions or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. Using <a href="" target="
+        _blank">this link</a>.</li>
+        <li>Parking is available at {{parking_info}}, and the venue is {{transit_info}}.</li>
+        <li>Feel free to reach out {{host_phone}}  if you have any questions or if there’s anything I can do to make your experience more enjoyable.</li>
+        </ul>
+        <p>See you soon at the dinner table for an evening of impactful dialogue and community building!</p>
+        <p>Warm regards,</p>
+        {{host_name}}</br>
+        {{host_org}}</br>
+        {{host_phone}}</br>
+        
+        <!-- HTML !-->
+"
   - days: 0
     hours: 2
     status: "Accepted"
