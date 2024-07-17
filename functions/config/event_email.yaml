@@ -1,10 +1,10 @@
 emails:
   - days: 7
     hours: 10
-    status: "Accepted"
-    subject: "Upcoming Potlucks for Change Dinner – See you next week!"
+    status: Accepted
+    subject: Upcoming Potlucks for Change Dinner – See you next week!
     body: > 
-      "<p>Hi {{fname}},</p>
+      <p>Hi {{fname}},</p>
         <p>I hope this email finds you well! I’m just reaching out to remind you of the Potlucks for Change dinner happening this {weekday}, {{month_day}}. We’re all set to welcome you at {{address}} at {{start_time}}.
         Here’s a quick recap of the evening:</p>
         <p>
@@ -15,7 +15,7 @@ emails:
         <p>We’re looking forward to an evening of warm conversation, delicious food, and actionable ideas on how we can collectively support reproductive freedom.
         A couple of quick reminders:</p>
         <ul>
-        <li>If you have any dietary restrictions or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. Using <a href=\"\" target=\"
+        <li>If you have any dietary requirements or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. Using <a href=\"\" target=\"
         _blank\">this link</a>.</li>
         <li>Parking is available at {{parking_info}}, and the venue is {{transit_info}}.</li>
         <li>Feel free to reach out {{host_phone}}  if you have any questions or if there’s anything I can do to make your experience more enjoyable.</li>
@@ -24,13 +24,13 @@ emails:
         <p>Warm regards,</p>
         {{host_name}}</br>
         {{host_org}}</br>
-        {{host_phone}}</br>"
+        {{host_phone}}</br>
   - days: 1
     hours: 10
-    status: "Accepted"
-    subject: "Upcoming Potlucks for Change Dinner – See you Tomorrow!"
+    status: Accepted
+    subject: Upcoming Potlucks for Change Dinner – See you Tomorrow!
     body: >
-      "<p>Hi {{fname}},</p>
+      <p>Hi {{fname}},</p>
         <p>Super excited for the Potlucks for Change dinner happening tomorrow {{weekday}}, {{month_day}}. We’ll see you at {{event_location}} at {{start_time}}. 
         Here’s a quick recap of the evening:</p>
         <b>Theme</b>: {{title}}</br>
@@ -92,10 +92,9 @@ emails:
         {{host_phone}}</br>
         
         <!-- HTML !-->
-"
   - days: 0
     hours: 2
-    status: "Accepted"
-    subject: "Excited to see you at Potluck for Change! Here are directions."
+    status: Accepted
+    subject: Excited to see you at Potluck for Change! Here are directions.
     body: >
-      "This is the body of the third email."
+      This is the body of the third email.
