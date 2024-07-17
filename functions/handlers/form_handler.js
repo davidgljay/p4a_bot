@@ -1,46 +1,42 @@
-import { h, Component } from 'preact';
+import React, { useState } from 'react';
 
-class FormHandler extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: '',
-            email: '',
-            message: ''
-        };
-    }
+function FormHandler() {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        message: ''
+    });
 
-    handleInputChange = (event) => {
-        const { name, value } = event.target;
-        this.setState({ [name]: value });
-    }
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-    handleSubmit = (event) => {
-        event.preventDefault();
+    const handleSubmit = (e) => {
+        e.preventDefault();
         // Handle form submission logic here
-    }
+        console.log(formData);
+    };
 
-    render() {
-        const { name, email, message } = this.state;
-
-        return (
-            <form onSubmit={this.handleSubmit}>
-                <div>
-                    <label htmlFor="name">Name:</label>
-                    <input type="text" id="name" name="name" value={name} onChange={this.handleInputChange} />
-                </div>
-                <div>
-                    <label htmlFor="email">Email:</label>
-                    <input type="email" id="email" name="email" value={email} onChange={this.handleInputChange} />
-                </div>
-                <div>
-                    <label htmlFor="message">Message:</label>
-                    <textarea id="message" name="message" value={message} onChange={this.handleInputChange} />
-                </div>
-                <button type="submit">Submit</button>
-            </form>
-        );
-    }
+    return (
+        <form onSubmit={handleSubmit}>
+            <label>
+                Name:
+                <input type="text" name="name" value={formData.name} onChange={handleChange} />
+            </label>
+            <br />
+            <label>
+                Email:
+                <input type="email" name="email" value={formData.email} onChange={handleChange} />
+            </label>
+            <br />
+            <label>
+                Message:
+                <textarea name="message" value={formData.message} onChange={handleChange} />
+            </label>
+            <br />
+            <button type="submit">Submit</button>
+        </form>
+    );
 }
 
 export default FormHandler;
