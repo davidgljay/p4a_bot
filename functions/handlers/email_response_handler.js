@@ -5,7 +5,6 @@ const moment = require('moment')
 const fs = require('fs');
 const path = require('path');
 const clientConfig = require('../config/client_config.js');
-const { event } = require('firebase-functions/v1/analytics');
 
 async function sendScheduledEmails(client_org) {
     const yaml = require('js-yaml');
@@ -17,8 +16,8 @@ async function sendScheduledEmails(client_org) {
         let registrations = [];
         for (const event of events) {
             registrations = registrations.concat(await getEventRegistrations(event, config)); 
+            emails = emails.concat(prepEmailsfromRegistrations(registrations, event, template));
         }
-        emails = emails.concat(prepEmailsfromRegistrations(registrations, event, template));
     }
     return emails;
 }
@@ -54,15 +53,27 @@ async function checkUpcomingEvents(days, hours, config) {
         // Perform any necessary logic with the events
         const cleanedEvents = [];
         for (const rawEvent of events) {
-            const host_name = rawEvent.properties.Host_Name.rollup.array.reduce((c, a, i, s) =>  (i == s.length -1) ? c.rich_text[0].text.content + ' and ' + a : c + ', ' + a)
+            // console.log('Event:', rawEvent);
+            const host_name = rawEvent.properties['Host Name'].rollup.array.reduce((acc, current, index, array) => {
+                const name = current.title[0].plain_text;
+                if (array.length == 1) {
+                    return name;
+                } else
+                if (index === array.length - 1) {
+                    return acc + ' and ' + name;
+                } else {
+                    return acc + ', ' + name;
+                }
+            }, '');
+
             const event = {
                 id: rawEvent.id,
                 title: rawEvent.properties.Title.title[0].text.content,
                 date: rawEvent.properties.Date.date.start,
                 location: rawEvent.properties.Location.rich_text[0].text.content,
                 host_name: host_name,
-                parking_info: rawEvent.properties.Parking_Info.rich_text[0].text.content,
-                transit_info: rawEvent.properties.Transit_Info.rich_text[0].text.content,
+                parking_info: rawEvent.properties['Parking Info'].rich_text[0].text.content,
+                transit_info: rawEvent.properties['Transit Info'].rich_text[0].text.content,
             };
             if (rawEvent.properties.Location) {
                 event.location = rawEvent.properties.Location.rich_text[0].plain_text;
@@ -92,12 +103,16 @@ async function getEventRegistrations(event, config) {
         const emails = [];
         for (const registration of registrations) {
             const fname = /[^ ]+/.exec(registration.properties.Name.formula.string) || ['Friend'];
+            // console.log('Registration:', registration.properties.Name.formula, registration.properties.Email.rollup.array);
+            if (registration.properties.Email.rollup.array.length > 0) {
             emails.push({
                 email: registration.properties.Email.rollup.array[0].email, 
                 status: registration.properties.Status.select.name, 
                 fname:fname[0]
             });
         }
+        }
+        console.log('Emails:', emails);
         return emails;
     } catch (error) {
         // Handle error
@@ -113,21 +128,22 @@ function prepEmailsfromRegistrations(registrations, event, template) {
         if (template.status != registration.status) {
             continue;
         }
-        const weekday = moment(event.start_time).format('dddd')
-        const month_day = moment(event.start_time).format('MMMM Do')
-        const start_time = moment(event.start_time).format('h:mm a')
+        const date = moment.parseZone(event.date)
+        const weekday = date.format('dddd')
+        const month_day = date.format('MMMM Do')
+        const start_time = date.format('h:mm a')
         const body = template.body
-            .replace('{{email}}', registration.email)
-            .replace('{{fname}}', registration.fname)
-            .replace('{{title}}', event.title)
-            .replace('{{weekday}}', weekday)
-            .replace('{{month_day}}', month_day)
-            .replace('{{start_time}}', start_time)
-            .replace('{{event_location}}', event.location)
-            .replace('{{host_name}}', event.host_name)
-            .replace('{{parking_info}}', event.parking_info)
-            .replace('{{transit_info}}', event.transit_info)
-            .replace('{{host_phone}}', evnet.host_phone)
+            .replace(/{{email}}/g, registration.email)
+            .replace(/{{fname}}/g, registration.fname)
+            .replace(/{{title}}/g, event.title)
+            .replace(/{{weekday}}/g, weekday)
+            .replace(/{{month_day}}/g, month_day)
+            .replace(/{{start_time}}/g, start_time)
+            .replace(/{{event_location}}/g, event.location)
+            .replace(/{{host_name}}/g, event.host_name)
+            .replace(/{{parking_info}}/g, event.parking_info)
+            .replace(/{{transit_info}}/g, event.transit_info)
+            .replace(/{{host_phone}}/g, event.host_phone)
 
         const subject = template.subject
             .replace('{{title}}', event.title);

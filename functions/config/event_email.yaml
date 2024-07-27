@@ -5,13 +5,13 @@ emails:
     subject: Upcoming Potlucks for Change Dinner – See you next week!
     body: > 
       <p>Hi {{fname}},</p>
-        <p>I hope this email finds you well! I’m just reaching out to remind you of the Potlucks for Change dinner happening this {weekday}, {{month_day}}. We’re all set to welcome you at {{address}} at {{start_time}}.
+        <p>I hope this email finds you well! I’m just reaching out to remind you of the Potlucks for Change dinner happening this {{weekday}}, {{month_day}}. We’re all set to welcome you at {{event_location}} at {{start_time}}.
         Here’s a quick recap of the evening:</p>
         <p>
-        <b>Theme</b>: {{title}}</br>
-        <b>Time</b>: {{start_time}}, {{weekday}} {{month_day}} (We’ll start with some appetizers and get to know each other!)</br>
-        <b>Address</b>: {{address}}</br>
-        <b>What to bring</b>: <a href=\"\" target=\"_blank\">Sign up here</a> to share the dish or drinks you would like to contribute to the evening.</p>
+        <p><b>Theme</b>: {{title}}</p>
+        <p><b>Time</b>: {{start_time}}, {{weekday}} {{month_day}} (We’ll start with some appetizers and get to know each other!)</p>
+        <p><b>Address</b>: {{event_location}}</p>
+        <p><b>What to bring</b>: <a href=\"\" target=\"_blank\">Sign up here</a> to share the dish or drinks you would like to contribute to the evening.</p>
         <p>We’re looking forward to an evening of warm conversation, delicious food, and actionable ideas on how we can collectively support reproductive freedom.
         A couple of quick reminders:</p>
         <ul>
@@ -23,8 +23,6 @@ emails:
         See you soon at the dinner table for an evening of impactful dialogue and community building!</p>
         <p>Warm regards,</p>
         {{host_name}}</br>
-        {{host_org}}</br>
-        {{host_phone}}</br>
   - days: 1
     hours: 10
     status: Accepted
@@ -88,8 +86,6 @@ emails:
         <p>See you soon at the dinner table for an evening of impactful dialogue and community building!</p>
         <p>Warm regards,</p>
         {{host_name}}</br>
-        {{host_org}}</br>
-        {{host_phone}}</br>
         
         <!-- HTML !-->
   - days: 0
