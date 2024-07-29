@@ -26,7 +26,7 @@ class NotionWrapper {
   async get(itemId) {
     try {
       const response = await this.client.pages.retrieve({page_id: itemId});
-      return response.results;
+      return response;
     } catch (error) {
       console.error("Error retrieving item:", error);
       throw error;
