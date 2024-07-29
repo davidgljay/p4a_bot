@@ -15,6 +15,7 @@ const expectedToken = `Bearer ${process.env.AUTH_TOKEN}`;
 const {handleGcalEvent} = require("./handlers/gcal_event_handler");
 const initializeNotion = require("./handlers/notion_db_init");
 const { sendScheduledEmails } = require("./handlers/email_response_handler");
+const { lookupRegistration } = require("./handlers/get_registration");
 
 exports.prepemails = onRequest(async (req, res) => {
   try {
@@ -80,6 +81,24 @@ exports.initializenotion = onRequest((req, res) => {
   } catch (error) {
     logger.error("Error initializing Notion", error);
     return res.status(500).send("Error initializing Notion");
+  }
+});
+
+exports.get_registration = onRequest(async (req, res) => {
+  if (req.method !== "GET") {
+    logger.error("Invalid request method", {structuredData: true});
+    return res.status(400).send("Invalid request method");
+  }
+
+  const id = req.query.id;
+  const client_org = req.query.client_org;
+
+  try {
+    const registration = await lookupRegistration(id, client_org);
+    res.status(200).send(registration);
+  } catch (error) {
+    logger.error("Error looking up registration", error);
+    res.status(500).send("Error looking up registration");
   }
 });
 
