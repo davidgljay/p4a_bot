@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 
 const AttendeeStatus = ({ status, setStatus }) => {
     return (
-        <div>
+        <div style={styles.container}>
             <div style={styles.header}>You are currently listed as:</div>
             <div style={styles.buttonContainer}>
                 <Button sx={styles.button} variant={status=='Accepted' ? 'contained' : 'outlined'} color="success" onClick={() => setStatus('Accepted')}>
@@ -22,6 +22,9 @@ const AttendeeStatus = ({ status, setStatus }) => {
 };
 
 const styles = {
+    container: {
+        margin: '2rem'
+    },
     header: {
         fontSize: '1rem',
         textAlign: 'center',
