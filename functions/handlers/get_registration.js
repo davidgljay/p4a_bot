@@ -19,6 +19,7 @@ async function lookupRegistration(id, client_org) {
           registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
           registrationFields: clientConfig[client_org].registrations_db.fields,
         };
+        // TODO: Implement as a Promise.all to improve responsiveness
         const registration = await notionClient.get(id);
         const properties = registration.properties;
         const event_id = findObjectById(properties, config.registrationFields.event).relation[0].id;
