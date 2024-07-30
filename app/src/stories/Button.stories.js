@@ -46,3 +46,10 @@ export const Small = {
     label: 'Button',
   },
 };
+
+export const TestStory = {
+  args: {
+    primary: false,
+    label: "Button"
+  }
+};
