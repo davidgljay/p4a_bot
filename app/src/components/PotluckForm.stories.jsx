@@ -8,6 +8,8 @@ export default meta;
 
 export const Default = {
   args: {
-    title: 'Potluck Form',
+    fname: 'Susan',
+    start_time: '2022-01-01T18:00:00',
+    address: '123 Main St, Springfield'
   }
 };
