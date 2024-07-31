@@ -6,16 +6,16 @@ import AttendeeStatus from './AttendeeStatus';
 import DietaryRequirement from './DietaryRequirement';
 import DishSignup from './DishSignup';
 
-const PotluckForm = ({fname, start_time, address, status, dishSignups, userDishSignup, dietReqs, groupDietReqs, numGuests, dishText, uploadForm}) => {
+const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, userDishType, userDietReqs, groupDietReqs, numGuests, userDishText, uploadForm}) => {
     const [statusState, setStatus] = useState(status);
-    const [dietaryRequirements, setDietaryRequirements] = useState(dietReqs);
-    const [userDishSignupState, setUserDishSignup] = useState(userDishSignup);
+    const [dietaryRequirements, setDietaryRequirements] = useState(userDietReqs);
+    const [userDishTypeState, setuserDishType] = useState(userDishType);
     const [dishSignupsState, setDishSignups] = useState(dishSignups);
     const [submitted, setSubmitted] = useState(false);
-    const [dishText, setDishText] = useState(dishText);
-    const time = moment(start_time).format('h:mm A');
-    const day = moment(start_time).format('dddd, MMMM Do');
-    const map_url = `https://www.google.com/maps/search/?api=1&query=${address}`;
+    const [userDishText, setuserDishText] = useState(userDishText);
+    const time = moment(eventStart).format('h:mm A');
+    const day = moment(eventStart).format('dddd, MMMM Do');
+    const map_url = `https://www.google.com/maps/search/?api=1&query=${eventAddress}`;
 
     useEffect(() => {
         console.log('Status updated:', statusState);
@@ -43,7 +43,7 @@ const PotluckForm = ({fname, start_time, address, status, dishSignups, userDishS
             <Container maxWith='sm' style={styles.container}>
                 <div style={styles.headerText}>
                     <h2>Hi {fname},</h2>
-                    <div >You have an upcoming dinner at <b>{time}</b> on <b>{day}</b>. It will take place at <a href={map_url} target="_blank">{address}</a>.</div>
+                    <div >You have an upcoming dinner at <b>{time}</b> on <b>{day}</b>. It will take place at <a href={map_url} target="_blank">{eventAddress}</a>.</div>
                 </div>
                 <AttendeeStatus status={statusState} setStatus={setStatus}/>
                 <DietaryRequirement dietReq={dietaryRequirements} setDietReq={setDietaryRequirements}/>

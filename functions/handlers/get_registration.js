@@ -1,3 +1,25 @@
+// Should return data of format:
+
+// {
+//   fname: First name of the registered user,
+//   event_start: Start time of the event,
+//   event_address: address of the event,
+//   status: Registered user status,
+//   user_diet_req: Dietary requirements of the registered user,
+//   user_dish_type: Dish type of the registered user,
+//   user_dish_text: Dish text of the registered user,
+//   dishtypes: array of dish types with the number needed of each dish.
+//   event_registrations: [{
+//     status: Status of the registered user,
+//     name: Name of the registered user,
+//     dish_text: Dish of the registered user,
+//     dish_type: Dish type of the registered user,
+//     diet_req: Dietary requirements of the registered user,
+// }]
+// }
+
+
+
 const { event } = require("firebase-functions/v1/analytics");
 const NotionWrapper = require("../apis/notion.js");
 const clientConfig = require('../config/client_config.js');
@@ -38,25 +60,34 @@ async function lookupRegistration(id, client_org) {
             event_registrations.push({
                 status: findObjectById(event_registration.properties, config.registrationFields.status).select.name,
                 name: event_registration.properties['Name'].formula.string,
-                dish: event_registration.properties['Dish'].rich_text.length > 0 ? event_registration.properties['Dish'].rich_text[0].text.content : null,
+                dish_text: event_registration.properties['Dish'].rich_text.length > 0 ? event_registration.properties['Dish'].rich_text[0].text.content : null,
                 dish_type: event_registration.properties['Dish Type'].select ? event_registration.properties['Dish Type'].select.name : null,
+                diet_req: event_registration.properties['Dietary Requirements'].rollup.array.length > 0 ? event_registration.properties['Dietary Requirements'].rollup.array[0].rich_text[0].text.content : null,
             });
         }
 
-        // TODO: Update database schema to include all fields, avoiding calling out fields by name.
+        const dish_types = [
+            {'salad': {need: 2}},
+            {'entree': {need: 2}}, 
+            {'dessert': {need: 2}}, 
+            {'alcoholic drink': {need: 2}},
+            {'nonalcoholic drink': {need: 2}}
+        ]
+
+        // TODO: Update database schema to include all fields so that fields can be called by ID rather than by name.
         const result = {
             id: registration.id,
             status: findObjectById(properties, config.registrationFields.status).select.name,
-            name: properties['Name'].formula.string,
-            user_contact_id: findObjectById(properties,config.registrationFields.contact).relation[0].id,
-            event_id: findObjectById(properties, config.registrationFields.event).relation[0].id,
-            dish: properties['Dish'].rich_text.length > 0 ? properties['Dish'].rich_text[0].text.content : null,
-            user_dish_type: properties['Dish Type'].select ? properties['Dish Type'].select.name : null,
+            fname: properties['Name'].formula.string,
             event_start: properties['Event Start Time'].rollup.array[0].date.start,
-            event_location: properties['Event Location'].rollup.array.length > 0 ? properties['Event Location'].rollup.array[0].rich_text[0].text.content : null,
-            user_diet: properties['Dietary Requirements'].rollup.array.length > 0 ? properties['Dietary Requirements'].rollup.array[0].rich_text[0].text.content : null,
-            event_registrations
-            };
+            event_address: properties['Event Location'].rollup.array.length > 0 ? properties['Event Location'].rollup.array[0].rich_text[0].text.content : null,
+            user_contact_id: findObjectById(properties,config.registrationFields.contact).relation[0].id,
+            user_diet_req: properties['Dietary Requirements'].rollup.array.length > 0 ? properties['Dietary Requirements'].rollup.array[0].rich_text[0].text.content : null,
+            user_dish_text: properties['Dish'].rich_text.length > 0 ? properties['Dish'].rich_text[0].text.content : null,
+            user_dish_type: properties['Dish Type'].select ? properties['Dish Type'].select.name : null,
+            event_registrations,
+            dish_types
+        };
 
         // Return the resulting object
         return result;
