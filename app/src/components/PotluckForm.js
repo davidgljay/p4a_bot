@@ -6,12 +6,13 @@ import AttendeeStatus from './AttendeeStatus';
 import DietaryRequirement from './DietaryRequirement';
 import DishSignup from './DishSignup';
 
-const PotluckForm = ({fname, start_time, address, status, dishSignups, userDishSignup, dietReqs, groupDietReqs, numGuests}) => {
+const PotluckForm = ({fname, start_time, address, status, dishSignups, userDishSignup, dietReqs, groupDietReqs, numGuests, dishText, uploadForm}) => {
     const [statusState, setStatus] = useState(status);
     const [dietaryRequirements, setDietaryRequirements] = useState(dietReqs);
     const [userDishSignupState, setUserDishSignup] = useState(userDishSignup);
     const [dishSignupsState, setDishSignups] = useState(dishSignups);
     const [submitted, setSubmitted] = useState(false);
+    const [dishText, setDishText] = useState(dishText);
     const time = moment(start_time).format('h:mm A');
     const day = moment(start_time).format('dddd, MMMM Do');
     const map_url = `https://www.google.com/maps/search/?api=1&query=${address}`;
