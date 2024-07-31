@@ -7,9 +7,6 @@ import DietaryRequirement from './DietaryRequirement';
 import DishSignup from './DishSignup';
 
 const PotluckForm = ({fname, start_time, address, status, dishSignups, userDishSignup, dietReqs, groupDietReqs, numGuests}) => {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [dish, setDish] = useState('');
     const [statusState, setStatus] = useState(status);
     const [dietaryRequirements, setDietaryRequirements] = useState(dietReqs);
     const [userDishSignupState, setUserDishSignup] = useState(userDishSignup);
