@@ -19,8 +19,8 @@ const DietaryRequirement = ({dietReq, setDietReq}) => {
                 <div>
                     <div style={styles.header}>Do you have any dietary requirements?</div>
                     <div style={styles.buttonContainer}>
-                        <Button sx={styles.button} color='primary' onClick={() => setAddPreference(true)}>Yes</Button>
-                        <Button sx={styles.button} color='primary' onClick={() => setAddPreference(false)}>No</Button>
+                        <Button sx={styles.button} color='success' onClick={() => setAddPreference(true)}>Yes</Button>
+                        <Button sx={styles.button} color='success' onClick={() => setAddPreference(false)}>No</Button>
                     </div>
                 </div>
          }
@@ -31,14 +31,16 @@ const DietaryRequirement = ({dietReq, setDietReq}) => {
                     <Input style={styles.input} type="text" placeholder='e.g. Vegetarian' value={dietReq}/>
                 </div>
             }
-            {addPreference == false && <div sx={styles.header}>Thanks for letting us know!</div>}
+            {addPreference == false && <div style={styles.header}>Thanks for letting us know!</div>}
         </div>
     );
 };
 
 const styles = {
     container: {
-        margin: '2rem'
+        display : 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
     header: {
         fontSize: '1rem',

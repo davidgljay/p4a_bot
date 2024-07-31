@@ -23,7 +23,9 @@ const AttendeeStatus = ({ status, setStatus }) => {
 
 const styles = {
     container: {
-        margin: '2rem'
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
     header: {
         fontSize: '1rem',
