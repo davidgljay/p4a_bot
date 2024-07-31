@@ -48,13 +48,13 @@ async function lookupRegistration(id, client_org) {
             id: registration.id,
             status: findObjectById(properties, config.registrationFields.status).select.name,
             name: properties['Name'].formula.string,
-            contact_id: findObjectById(properties,config.registrationFields.contact).relation[0].id,
+            user_contact_id: findObjectById(properties,config.registrationFields.contact).relation[0].id,
             event_id: findObjectById(properties, config.registrationFields.event).relation[0].id,
             dish: properties['Dish'].rich_text.length > 0 ? properties['Dish'].rich_text[0].text.content : null,
-            dish_type: properties['Dish Type'].select ? properties['Dish Type'].select.name : null,
+            user_dish_type: properties['Dish Type'].select ? properties['Dish Type'].select.name : null,
             event_start: properties['Event Start Time'].rollup.array[0].date.start,
             event_location: properties['Event Location'].rollup.array.length > 0 ? properties['Event Location'].rollup.array[0].rich_text[0].text.content : null,
-            contact_diet: properties['Dietary Requirements'].rollup.array.length > 0 ? properties['Dietary Requirements'].rollup.array[0].rich_text[0].text.content : null,
+            user_diet: properties['Dietary Requirements'].rollup.array.length > 0 ? properties['Dietary Requirements'].rollup.array[0].rich_text[0].text.content : null,
             event_registrations
             };
 
