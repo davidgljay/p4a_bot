@@ -118,10 +118,6 @@ class App extends React.Component {
         status
       })
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-    });
   };
 
   render() {

@@ -18,10 +18,6 @@ const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, user
     const time = moment(eventStart).format('h:mm A');
     const day = moment(eventStart).format('dddd, MMMM Do');
     const map_url = `https://www.google.com/maps/search/?api=1&query=${eventAddress}`;
-
-    useEffect(() => {
-        console.log('Status updated:', statusState);
-    }, [statusState]);
     
     useEffect(() => {
         setSubmitted(false);
@@ -37,13 +33,16 @@ const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, user
         }));
     }, [userDishTypeState]);
 
-    const handleSubmit = () => {setSubmitted(true)};
+    const handleSubmit = () => {
+        uploadForm(userDishTypeState, userDietReqsState, userDishTextState, statusState);
+        setSubmitted(true);
+    };
 
     return (
         <ThemeProvider theme={theme}>
             <div>
                 <TopBar/>
-                <Container maxWith='sm' sx={styles.container}>
+                <Container maxWidth='md' sx={styles.container}>
                     <div style={styles.headerText}>
                         {fname && <h2>Hi {fname},</h2>}
                         <div >You have an upcoming dinner at <b>{time}</b> on <b>{day}</b>. {eventAddress && <span>It will take place at <a href={map_url} target="_blank">{eventAddress}</a>.</span>}</div>
@@ -51,7 +50,7 @@ const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, user
                     <AttendeeStatus status={statusState} setStatus={setStatus}/>
                     <DietaryRequirement userDietReqs={userDietReqsState} setUserDietReqs={setUserDietReqsState}/>
                     <DishSignup dishSignups={dishSignupsState} setUserDishType={setUserDishType} userDishType={userDishTypeState} groupDietReqs={groupDietReqs} numGuests={numGuests} userDishText={userDishTextState} setUserDishText={setUserDishTextState}/>
-                    <Button variant='contained' color='success' onClick={() => handleSubmit()}>Submit</Button>
+                    {!submitted && <Button variant='contained' color='success' onClick={() => handleSubmit()}>Submit</Button>}
                     {submitted && userDishTypeState && <div style={styles.header}>Thank you for signing up! See you at the dinner.</div>}
                     {submitted && !userDishTypeState && <div style={{...styles.header, color: 'red'}}>Please select a dish to bring.</div>}
                 </Container>
