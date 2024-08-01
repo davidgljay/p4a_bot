@@ -7,7 +7,7 @@ const DietaryRequirement = ({userDietReqs, setUserDietReqs}) => {
     
     return (
         <div style={styles.container}>
-            {!userDietReqs && addPreference == null &&
+            {!userDietReqs && addPreference === null &&
                 <div>
                     <div style={styles.header}>Do you have any dietary requirements?</div>
                     <div style={styles.buttonContainer}>
