@@ -21,6 +21,8 @@ exports.prepemails = onRequest(async (req, res) => {
   try {
     const emails = await sendScheduledEmails(req.body.client_org);
     res.status(200).send(emails);
+
+    //TODO: Add Auth token check
   }
   catch (error) {
     logger.error("Error preparing emails", error);
@@ -95,7 +97,7 @@ exports.get_registration = onRequest(async (req, res) => {
 
   try {
     const registration = await lookupRegistration(id, client_org);
-    res.status(200).send(registration);
+    res.status(200).send(JSON.stringify(registration));
   } catch (error) {
     logger.error("Error looking up registration", error);
     res.status(500).send("Error looking up registration");
