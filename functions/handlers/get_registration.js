@@ -67,11 +67,11 @@ async function lookupRegistration(id, client_org) {
         }
 
         const dish_types = [
-            {'salad': {need: 2}},
-            {'entree': {need: 2}}, 
-            {'dessert': {need: 2}}, 
-            {'alcoholic drink': {need: 2}},
-            {'nonalcoholic drink': {need: 2}}
+            {type: 'salad', need: 2},
+            {type: 'entree', need: 2}, 
+            {type: 'dessert', need: 2}, 
+            {type: 'alcoholic drink', need: 2},
+            {type: 'nonalcoholic drink', need: 2}
         ]
 
         // TODO: Update database schema to include all fields so that fields can be called by ID rather than by name.
