@@ -117,6 +117,14 @@ class NotionWrapper {
     }
   }
 
+  findObjectById(obj, id) {
+    for (let key in obj) {
+        if (obj[key].id === id) {
+            return obj[key];
+        }
+    }
+}
+
 }
 
 module.exports = NotionWrapper;

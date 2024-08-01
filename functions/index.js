@@ -16,6 +16,7 @@ const {handleGcalEvent} = require("./handlers/gcal_event_handler");
 const initializeNotion = require("./handlers/notion_db_init");
 const { sendScheduledEmails } = require("./handlers/email_response_handler");
 const { lookupRegistration } = require("./handlers/get_registration");
+const { potluck_form } = require("./handlers/potluck_form");
 
 exports.prepemails = onRequest(async (req, res) => {
   try {
@@ -67,7 +68,7 @@ exports.initializenotion = onRequest((req, res) => {
 
   if (authToken !== expectedToken) {
     logger.error("Unauthorized request", {structuredData: true});
-    return res.status(403).send("Unauthorized, received tojen: " + authToken);
+    return res.status(403).send("Unauthorized, received token: " + authToken);
   }
   if (!req.body.parentPageId) {
     logger.error("No parent page ID provided", {structuredData: true});
@@ -104,10 +105,17 @@ exports.get_registration = onRequest(async (req, res) => {
   }
 });
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+exports.potluck_form = onRequest(async (req, res) => {
+  if (req.method !== "POST") {
+    logger.error("Invalid request method", {structuredData: true});
+    return res.status(400).send("Invalid request method");
+  }
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// })
+  try {
+    await potluck_form(req.body);
+    res.status(200).send("Success");
+  } catch (error) {
+    logger.error("Error uploading form", error);
+    res.status(500).send("Error uploading form");
+  }
+});
