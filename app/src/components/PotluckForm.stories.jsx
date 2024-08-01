@@ -60,7 +60,7 @@ Default.args = {
 
 export const NoSignups = Template.bind({});
 NoSignups.args = {
-  fname: 'Susan',
+  fname: '',
   start_time: '2022-01-01T18:00:00',
   address: '123 Main St, Springfield',
   status: 'Accepted',

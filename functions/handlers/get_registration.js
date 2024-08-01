@@ -78,7 +78,7 @@ async function lookupRegistration(id, client_org) {
         const result = {
             id: registration.id,
             status: findObjectById(properties, config.registrationFields.status).select.name,
-            fname: properties['Name'].formula.string,
+            fname: properties['Name'] && properties['Name'].formula.split(' ')[0],
             event_start: properties['Event Start Time'].rollup.array[0].date.start,
             event_address: properties['Event Location'].rollup.array.length > 0 ? properties['Event Location'].rollup.array[0].rich_text[0].text.content : null,
             user_contact_id: findObjectById(properties,config.registrationFields.contact).relation[0].id,
