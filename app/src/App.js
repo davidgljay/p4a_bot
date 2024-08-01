@@ -97,16 +97,18 @@ class App extends React.Component {
     });
   };
 
-  uploadForm = (userDishSignup, dietReqs, dishText, status) => {
+  uploadForm = (userDishType, userDietReqs, userDishText, status) => {
     fetch('http://localhost:3001/potluck', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        userDishSignup,
-        dietReqs,
-        dishText,
+        client_org: 'p4c',
+        registration_id: id,
+        user_dish_type: userDishType,
+        user_diet_reqs: userDietReqs,
+        user_dish_text: userDishText,
         status
       })
     })
