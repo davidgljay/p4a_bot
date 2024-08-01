@@ -81,7 +81,7 @@ class App extends React.Component {
         this.setState({
           fname: data.fname,
           eventStart: data.event_start,
-          eventAddress: data.address,
+          eventAddress: data.event_address,
           status: data.status,
           userDietReq: data.user_diet_req,
           userDishType: data.user_dish_type,

@@ -46,7 +46,7 @@ const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, user
                 <Container maxWith='sm' sx={styles.container}>
                     <div style={styles.headerText}>
                         {fname && <h2>Hi {fname},</h2>}
-                        <div >You have an upcoming dinner at <b>{time}</b> on <b>{day}</b>. It will take place at <a href={map_url} target="_blank">{eventAddress}</a>.</div>
+                        <div >You have an upcoming dinner at <b>{time}</b> on <b>{day}</b>. {eventAddress && <span>It will take place at <a href={map_url} target="_blank">{eventAddress}</a>.</span>}</div>
                     </div>
                     <AttendeeStatus status={statusState} setStatus={setStatus}/>
                     <DietaryRequirement userDietReqs={userDietReqsState} setUserDietReqs={setUserDietReqsState}/>
