@@ -14,7 +14,7 @@ const styles = {
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '1rem',
-        backgroundColor: 'rgb(99, 160, 76)',
+        backgroundColor: '#rgb(99, 160, 76)',
         color: '#fff',
     },
     logo: {

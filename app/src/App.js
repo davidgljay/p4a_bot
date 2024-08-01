@@ -14,7 +14,8 @@ class App extends React.Component {
     dishSignups: [],
     userDishSignup: null,
     groupDietReqs: [],
-    numGuests: null
+    numGuests: null,
+    err: null
   };
 
   componentDidMount() {
@@ -79,7 +80,12 @@ class App extends React.Component {
           numGuests,
           loaded: true
         });
-    });
+    })
+    .catch(err => {
+      this.setState({
+        err,
+        loaded: true
+      });
   };
 
   uploadForm = (userDishSignup, dietReqs, dishText, status) => {
@@ -104,7 +110,11 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        {loaded ? <PotluckForm {...this.state} uploadForm={uploadForm}/> : <CircularProgress/>}
+        {loaded && !err ? <PotluckForm {...this.state} uploadForm={uploadForm}/> : <CircularProgress/>}
+        {err && <div>
+            <h1>Error loading form</h1>
+            <div>{err}</div>
+          </div>}
       </div>
     );
 };
