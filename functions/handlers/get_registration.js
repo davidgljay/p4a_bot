@@ -51,6 +51,7 @@ async function lookupRegistration(id, client_org) {
             event_registrations.push({
                 status: notionClient.findObjectById(event_registration.properties, config.registrationFields.status).select.name,
                 name: event_registration.properties['Name'].formula.string,
+                is_user: event_registration.id.replace(/-/g, '') === id,
                 dish_text: event_registration.properties['Dish'].rich_text.length > 0 ? event_registration.properties['Dish'].rich_text[0].text.content : null,
                 dish_type: event_registration.properties['Dish Type'].select ? event_registration.properties['Dish Type'].select.name : null,
                 diet_req: event_registration.properties['Dietary Requirements'].rollup.array.length > 0 ? event_registration.properties['Dietary Requirements'].rollup.array[0].rich_text[0].text.content : null,

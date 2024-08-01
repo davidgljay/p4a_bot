@@ -59,8 +59,12 @@ class App extends React.Component {
             need: data.dish_types[i].need
           });
           for (let j = 0; j < data.event_registrations.length; j++) {
-            if (data.event_registrations[j].dish_type && data.event_registrations[j].dish_type.downcase() === data.dish_types[i].type.downcase()) {
-              dishSignups[i].have++;
+            if (
+              data.event_registrations[j].dish_type && 
+              data.event_registrations[j].dish_type === data.dish_types[i].type &&
+              !data.event_registrations[j].is_user
+            ) {
+                dishSignups[i].have++;
             }
           }
         }
@@ -98,7 +102,9 @@ class App extends React.Component {
   };
 
   uploadForm = (userDishType, userDietReqs, userDishText, status) => {
-    fetch('http://localhost:3001/potluck', {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    fetch('http://localhost:5001/potlucks4change/us-central1/potluck_form', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
