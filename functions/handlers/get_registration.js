@@ -48,6 +48,9 @@ async function lookupRegistration(id, client_org) {
         let event_registrations = [];
         for (let i = 0; i < event_registrations_raw.length; i++) {
             const event_registration = event_registrations_raw[i];
+            if (notionClient.findObjectById(event_registration.properties, config.registrationFields.status).select.name !== 'accepted') {
+                continue;
+            }
             event_registrations.push({
                 status: notionClient.findObjectById(event_registration.properties, config.registrationFields.status).select.name,
                 name: event_registration.properties['Name'].formula.string,
