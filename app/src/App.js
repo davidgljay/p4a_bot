@@ -1,7 +1,11 @@
+import { load } from "js-yaml";
 import PotluckForm from "./components/PotluckForm";
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 
 class App extends React.Component {
   state = {
+    loaded: false,
     fname: null,
     event_start: null,
     address: null,
@@ -72,7 +76,8 @@ class App extends React.Component {
           userDishText: data.user_dish_text,
           dishSignups,
           groupDietReqs,
-          numGuests
+          numGuests,
+          loaded: true
         });
     });
   };
@@ -99,7 +104,7 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        <PotluckForm {...this.state} uploadForm={uploadForm}/>
+        {loaded ? <PotluckForm {...this.state} uploadForm={uploadForm}/> : <CircularProgress/>}
       </div>
     );
 };
