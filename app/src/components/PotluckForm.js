@@ -9,6 +9,8 @@ import theme from '../theme';
 
 
 const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, userDishType, userDietReqs, groupDietReqs, numGuests, userDishText, uploadForm}) => {
+ 
+    //TODO: refactor so that all of this state logic lived in App.js, which makes more sense.
     const [statusState, setStatus] = useState(status);
     const [userDietReqsState, setUserDietReqsState] = useState(userDietReqs);
     const [userDishTypeState, setUserDishType] = useState(userDishType);

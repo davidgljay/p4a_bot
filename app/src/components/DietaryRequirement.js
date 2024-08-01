@@ -17,7 +17,7 @@ const DietaryRequirement = ({userDietReqs, setUserDietReqs}) => {
                 </div>
          }
             
-            {addPreference && 
+            {(userDietReqs || addPreference) && 
                 <div style={styles.inputContainer}>
                     <div style={styles.header}><i>Please be sure to clearly state any dietary requirements, including allergies.</i></div>
                     <Input style={styles.input} type="text" placeholder='e.g. Vegetarian' value={userDietReqs} onChange={(e) => setUserDietReqs(e.target.value)}/>

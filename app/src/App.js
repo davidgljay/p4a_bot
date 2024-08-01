@@ -83,7 +83,7 @@ class App extends React.Component {
           eventStart: data.event_start,
           eventAddress: data.event_address,
           status: data.status,
-          userDietReq: data.user_diet_req,
+          userDietReqs: data.user_diet_req,
           userDishType: data.user_dish_type,
           userDishText: data.user_dish_text,
           dishSignups,
