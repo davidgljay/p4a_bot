@@ -19,20 +19,20 @@ const DishSignup = ({dishSignups, setUserDishType , userDishType, groupDietReqs,
                {getCurrentlyNeededDishes(dishSignups).length > 0 && <div style={styles.header}>Currently Needed</div>}
                 <div style={styles.buttonContainer}>
                     {getCurrentlyNeededDishes(dishSignups).map((dish, index) => (
-                        <Button color="success" onClick={() => setUserDishType(dish.title)} variant={ dish.title == userDishType ? 'contained' : 'text' } key={index}>{dish.title} ({dish.have}/{dish.need})</Button>
+                        <Button color="success" onClick={() => setUserDishType(dish.title)} variant={ dish.title === userDishType ? 'contained' : 'text' } key={index}>{dish.title} ({dish.have}/{dish.need})</Button>
                     ))}
                 </div>
                 {getUseMoreDishes(dishSignups).length > 0 && <div style={styles.header}>Could Use More</div>}
                 <div style={styles.buttonContainer}>
                     {getUseMoreDishes(dishSignups).map((dish, index) => (
-                        <Button color="success" onClick={() => setUserDishType(dish.title)} variant={ dish.title == userDishType ? 'contained' : 'text' } key={index}>{dish.title}  ({dish.have}/{dish.need})</Button>
+                        <Button color="success" onClick={() => setUserDishType(dish.title)} variant={ dish.title === userDishType ? 'contained' : 'text' } key={index}>{dish.title}  ({dish.have}/{dish.need})</Button>
                     ))}
                 </div>
                 <div style={{fontStyle: 'italic', marginTop: '60px', marginBottom: '10px'}}>We expect {numGuests} guests with the following dietary requirements:</div>
-                <div >{groupDietReqs.length > 0 ? groupDietReqs.join(' | ') : <div>None Provided So Far</div>}</div>
+                <div style={(styles.buttonContainer)} >{groupDietReqs.length > 0 ? groupDietReqs.map((req, i) => <div style={styles.ml10}>{req}{(i < groupDietReqs.length-1) && " | "}</div>) : <div>None Provided So Far</div>}</div>
                 <div style={styles.header}>What are you planning to bring?</div>
                 <div style={styles.inputContainer}>
-                    <Input style={styles.input} type="text" placeholder='Store bought is fine!' value={userDishText} onChange={(e) => setUserDishText(e.target.value)}/>
+                    <Input sx={styles.input} type="text" value={userDishText} onChange={(e) => setUserDishText(e.target.value)}/>
                 </div>
             </div>
 
@@ -54,26 +54,32 @@ const styles = {
         margin: '.5rem',
         marginTop: '60px',
     },
-
     buttonContainer: {
         display: 'flex',
         justifyContent: 'center',
+        flexWrap: 'wrap',
         width: '100%',
     },
     button: {
-        margin: '0.5rem',
+        marginLeft: '10px',
+        marginRight: '10px',
         fontSize: '.75rem',
     },
     input: {
         marginTop: '1rem',
-        width: '400px'
+        width: '400px',
+        '@media (max-width: 600px)': {
+            width: '250px',
+        }
     },
     inputContainer: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+    },
+    ml10: {
+        marginLeft: '5px'
     }
-
 };
 
 export default DishSignup;

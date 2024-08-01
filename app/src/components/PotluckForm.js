@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import TopBar from './TopBar';
-import {Button, Container} from '@mui/material';
+import {Button, Container, ThemeProvider} from '@mui/material';
 import moment from 'moment';
 import AttendeeStatus from './AttendeeStatus';
 import DietaryRequirement from './DietaryRequirement';
 import DishSignup from './DishSignup';
+import theme from '../theme';
+
 
 const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, userDishType, userDietReqs, groupDietReqs, numGuests, userDishText, uploadForm}) => {
     const [statusState, setStatus] = useState(status);
@@ -38,21 +40,23 @@ const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, user
     const handleSubmit = () => {setSubmitted(true)};
 
     return (
-        <div>
-            <TopBar/>
-            <Container maxWith='sm' style={styles.container}>
-                <div style={styles.headerText}>
-                    {fname && <h2>Hi {fname},</h2>}
-                    <div >You have an upcoming dinner at <b>{time}</b> on <b>{day}</b>. It will take place at <a href={map_url} target="_blank">{eventAddress}</a>.</div>
-                </div>
-                <AttendeeStatus status={statusState} setStatus={setStatus}/>
-                <DietaryRequirement userDietReqs={userDietReqsState} setUserDietReqs={setUserDietReqsState}/>
-                <DishSignup dishSignups={dishSignupsState} setUserDishType={setUserDishType} userDishType={userDishTypeState} groupDietReqs={groupDietReqs} numGuests={numGuests} userDishText={userDishTextState} setUserDishText={setUserDishTextState}/>
-                <Button variant='contained' color='success' onClick={() => handleSubmit()}>Submit</Button>
-                {submitted && userDishTypeState && <div style={styles.header}>Thank you for signing up! See you at the dinner.</div>}
-                {submitted && !userDishTypeState && <div style={{...styles.header, color: 'red'}}>Please select a dish to bring.</div>}
-            </Container>
-        </div>
+        <ThemeProvider theme={theme}>
+            <div>
+                <TopBar/>
+                <Container maxWith='sm' sx={styles.container}>
+                    <div style={styles.headerText}>
+                        {fname && <h2>Hi {fname},</h2>}
+                        <div >You have an upcoming dinner at <b>{time}</b> on <b>{day}</b>. It will take place at <a href={map_url} target="_blank">{eventAddress}</a>.</div>
+                    </div>
+                    <AttendeeStatus status={statusState} setStatus={setStatus}/>
+                    <DietaryRequirement userDietReqs={userDietReqsState} setUserDietReqs={setUserDietReqsState}/>
+                    <DishSignup dishSignups={dishSignupsState} setUserDishType={setUserDishType} userDishType={userDishTypeState} groupDietReqs={groupDietReqs} numGuests={numGuests} userDishText={userDishTextState} setUserDishText={setUserDishTextState}/>
+                    <Button variant='contained' color='success' onClick={() => handleSubmit()}>Submit</Button>
+                    {submitted && userDishTypeState && <div style={styles.header}>Thank you for signing up! See you at the dinner.</div>}
+                    {submitted && !userDishTypeState && <div style={{...styles.header, color: 'red'}}>Please select a dish to bring.</div>}
+                </Container>
+            </div>
+        </ThemeProvider>
     );
 };
 
@@ -66,7 +70,10 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        textAlign: 'center'
+        textAlign: 'center',
+        '@media (max-width: 600px)': {
+            margin: '0px',
+        }
     },
     header: {
         fontSize: '1rem',

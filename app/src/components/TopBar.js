@@ -11,14 +11,14 @@ const TopBar = () => {
 const styles = {
     topBar: {
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
         padding: '1rem',
         backgroundColor: 'rgb(99, 160, 76)',
         color: '#fff',
     },
     logo: {
-        maxWidth: '250px',
+        maxWidth: '225px',
     }
 };
 

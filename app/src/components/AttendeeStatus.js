@@ -6,13 +6,13 @@ const AttendeeStatus = ({ status, setStatus }) => {
         <div style={styles.container}>
             <div style={styles.header}>You are currently listed as:</div>
             <div style={styles.buttonContainer}>
-                <Button sx={styles.button} variant={status ==='Accepted' ? 'contained' : 'outlined'} color="success" onClick={() => setStatus('Accepted')}>
+                <Button sx={styles.button} variant={status ==='Accepted' ? 'contained' : 'text'} color="success" onClick={() => setStatus('Accepted')}>
                     Attending
                 </Button>
-                <Button sx={styles.button} variant={status ==='Maybe' ? 'contained' : 'outlined'} color="warning" onClick={() => setStatus('Maybe')}>
+                <Button sx={styles.button} variant={status=='Maybe' ? 'contained' : 'text'} color="warning" onClick={() => setStatus('Maybe')}>
                     Maybe
                 </Button>
-                <Button sx={styles.button} variant={status ==='Declined' ? 'contained' : 'outlined'} color="error" onClick={() => setStatus('Declined')}>
+                <Button sx={styles.button} variant={status=='Declined' ? 'contained' : 'text'} color="error" onClick={() => setStatus('Declined')}>
                     Regrets
                 </Button>
             </div>
@@ -36,14 +36,12 @@ const styles = {
     buttonContainer: {
         display: 'flex',
         justifyContent: 'center',
+        flexWrap: 'wrap',
     },
     button: {
         margin: '0.5rem',
         fontSize: '1rem',
         maxWidth: '400px',
-        '@media (max-width: 600px)': {
-            fontSize: '0.5rem',
-        }
     }
 };
 

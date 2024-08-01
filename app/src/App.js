@@ -119,14 +119,14 @@ class App extends React.Component {
   render() {
     const {loaded, err} = this.state;
     return (
-      <div className="App" style={styles.container}>
-        {!loaded && <CircularProgress/>}
-        {loaded && !err && <PotluckForm {...this.state} uploadForm={this.uploadForm}/> }
-        {err && <div>
-            <h1>Error loading form</h1>
-            <div>{err.toString()}</div>
-          </div>}
-      </div>
+        <div className="App" style={styles.container}>
+          {!loaded && <CircularProgress/>}
+          {loaded && !err && <PotluckForm {...this.state} uploadForm={this.uploadForm}/> }
+          {err && <div>
+              <h1>Error loading form</h1>
+              <div>{err.toString()}</div>
+            </div>}
+        </div>
     );
 };
 };
