@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import Input from '@mui/material/Input';
 
-const DietaryRequirement = ({dietReq, setDietReq}) => {
+const DietaryRequirement = ({userDietReqs, setUserDietReqs}) => {
     const [addPreference, setAddPreference] = useState(null);
-
-    useEffect(() => {
-        if (dietReq != '') {
-            setAddPreference(true);
-        }
-    }, [dietReq]);
     
-    
-
     return (
         <div style={styles.container}>
-            {addPreference === null && 
+            {!userDietReqs && addPreference == null &&
                 <div>
                     <div style={styles.header}>Do you have any dietary requirements?</div>
                     <div style={styles.buttonContainer}>
@@ -28,7 +20,7 @@ const DietaryRequirement = ({dietReq, setDietReq}) => {
             {addPreference && 
                 <div style={styles.inputContainer}>
                     <div style={styles.header}><i>Please be sure to clearly state any dietary requirements, including allergies.</i></div>
-                    <Input style={styles.input} type="text" placeholder='e.g. Vegetarian' value={dietReq}/>
+                    <Input style={styles.input} type="text" placeholder='e.g. Vegetarian' value={userDietReqs} onChange={(e) => setUserDietReqs(e.target.value)}/>
                 </div>
             }
             {addPreference == false && <div style={styles.header}>Thanks for letting us know!</div>}
@@ -46,7 +38,7 @@ const styles = {
         fontSize: '1rem',
         textAlign: 'center',
         margin: '.5rem',
-        marginTop: '1rem',
+        marginTop: '60px',
     },
     buttonContainer: {
         display: 'flex',

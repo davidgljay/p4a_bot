@@ -8,11 +8,11 @@ import DishSignup from './DishSignup';
 
 const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, userDishType, userDietReqs, groupDietReqs, numGuests, userDishText, uploadForm}) => {
     const [statusState, setStatus] = useState(status);
-    const [dietaryRequirements, setDietaryRequirements] = useState(userDietReqs);
-    const [userDishTypeState, setuserDishType] = useState(userDishType);
+    const [userDietReqsState, setUserDietReqsState] = useState(userDietReqs);
+    const [userDishTypeState, setUserDishType] = useState(userDishType);
     const [dishSignupsState, setDishSignups] = useState(dishSignups);
     const [submitted, setSubmitted] = useState(false);
-    const [userDishText, setuserDishText] = useState(userDishText);
+    const [userDishTextState, setUserDishTextState] = useState(userDishText);
     const time = moment(eventStart).format('h:mm A');
     const day = moment(eventStart).format('dddd, MMMM Do');
     const map_url = `https://www.google.com/maps/search/?api=1&query=${eventAddress}`;
@@ -28,12 +28,12 @@ const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, user
             deepCopy[i] = {...dishSignups[i]};
         }
         setDishSignups(deepCopy.map((dish, index) => {
-            if (dish.title === userDishSignupState) {
+            if (dish.title === userDishTypeState) {
                 dish.have =  dishSignups[index].have + 1;
             }
             return dish;
         }));
-    }, [userDishSignupState]);
+    }, [userDishTypeState]);
 
     const handleSubmit = () => {setSubmitted(true)};
 
@@ -46,11 +46,11 @@ const PotluckForm = ({fname, eventStart, eventAddress, status, dishSignups, user
                     <div >You have an upcoming dinner at <b>{time}</b> on <b>{day}</b>. It will take place at <a href={map_url} target="_blank">{eventAddress}</a>.</div>
                 </div>
                 <AttendeeStatus status={statusState} setStatus={setStatus}/>
-                <DietaryRequirement dietReq={dietaryRequirements} setDietReq={setDietaryRequirements}/>
-                <DishSignup dishSignups={dishSignupsState} setUserDishSignup={setUserDishSignup} userDishSignup={userDishSignupState} groupDietReqs={groupDietReqs} numGuests={numGuests}/>
+                <DietaryRequirement userDietReqs={userDietReqsState} setUserDietReqs={setUserDietReqsState}/>
+                <DishSignup dishSignups={dishSignupsState} setUserDishType={setUserDishType} userDishType={userDishTypeState} groupDietReqs={groupDietReqs} numGuests={numGuests} userDishText={userDishTextState} setUserDishText={setUserDishTextState}/>
                 <Button variant='contained' color='success' onClick={() => handleSubmit()}>Submit</Button>
-                {submitted && userDishSignupState && <div style={styles.header}>Thank you for signing up! See you at the dinner.</div>}
-                {submitted && !userDishSignupState && <div style={{...styles.header, color: 'red'}}>Please select a dish to bring.</div>}
+                {submitted && userDishTypeState && <div style={styles.header}>Thank you for signing up! See you at the dinner.</div>}
+                {submitted && !userDishTypeState && <div style={{...styles.header, color: 'red'}}>Please select a dish to bring.</div>}
             </Container>
         </div>
     );

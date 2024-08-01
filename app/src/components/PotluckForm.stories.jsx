@@ -28,12 +28,12 @@ Default.args = {
   dietReqs: '',
   dishSignups: [
     {
-      title: 'main',
+      title: 'entree',
       have: 1,
       need: 2
     },
     {
-      title: 'side',
+      title: 'salad',
       have: 2,
       need: 2
     },
@@ -43,12 +43,17 @@ Default.args = {
       need: 1
     },
     {
-      title: 'drink',
+      title: 'alcoholic drink',
+      have: 2,
+      need: 2
+    },
+    {
+      title: 'nonalcoholic drink',
       have: 2,
       need: 2
     }
   ],
-  userDishSignup: 'main',
+  userDishSignup: 'entree',
   groupDietReqs: ['vegan', 'vegetarian', 'gluten free', 'shellfish allergy'],
   numGuests: 10
 };
@@ -62,12 +67,12 @@ NoSignups.args = {
   dietReqs: '',
   dishSignups: [
     {
-      title: 'main',
+      title: 'entree',
       have: 0,
       need: 2
     },
     {
-      title: 'side',
+      title: 'salad',
       have: 0,
       need: 2
     },
@@ -77,7 +82,12 @@ NoSignups.args = {
       need: 1
     },
     {
-      title: 'drink',
+      title: 'alcoholic drink',
+      have: 0,
+      need: 2
+    },
+    {
+      title: 'nonalcoholic drink',
       have: 0,
       need: 2
     }
