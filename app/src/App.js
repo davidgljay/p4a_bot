@@ -28,7 +28,7 @@ class App extends React.Component {
     //   user_diet_req: Dietary requirements of the registered user,
     //   user_dish_type: Dish type of the registered user,
     //   user_dish_text: Dish text of the registered user,
-    //   dishtypes: array of dish types with the number needed of each dish.
+    //   dish_types: array of dish types with the number needed of each dish.
     //   event_registrations: [{
     //     status: Status of the registered user,
     //     name: Name of the registered user,
@@ -38,18 +38,28 @@ class App extends React.Component {
     // }]
     // }
 
-    fetch('http://localhost:3001/potluck')
-      .then(response => response.json())
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    fetch('http://localhost:5001/potlucks4change/us-central1/get_registration?client_org=p4c&id=' + id)
+      .then(response => {
+        console.log('Response:', response);
+        if (!response.ok) {
+          throw new Error('Failed to load form');
+        }
+        return response.json();
+      })
       .then(data => {
+        console.log('Recieved data:', data);
         let dishSignups = [];
-        for (let i = 0; i < data.dishtypes.length; i++) {
+        for (let i = 0; i < data.dish_types.length; i++) {
           dishSignups.push({
-            title: data.dishtypes[i],
+            title: data.dish_types[i].type,
             have: 0,
-            need: data.dishtypes[i].need
+            need: data.dish_types[i].need
           });
           for (let j = 0; j < data.event_registrations.length; j++) {
-            if (data.event_registrations[j].dish_type.downcase() === data.dishtypes[i].downcase() && data.event_registrations[j].status.downcase() === 'accepted') {
+            if (data.event_registrations[j].dish_type && data.event_registrations[j].dish_type.downcase() === data.dish_types[i].type.downcase()) {
               dishSignups[i].have++;
             }
           }
@@ -58,9 +68,6 @@ class App extends React.Component {
         let groupDietReqs = [];
         let numGuests = 0;
         for (let i = 0; i < data.event_registrations.length; i++) {
-          if (data.event_registrations[i].status.downcase() !== 'accepted') {
-            continue;
-          }
           if (data.event_registrations[i].diet_req) {
             groupDietReqs.push(data.event_registrations[i].diet_req);
           }
@@ -82,6 +89,7 @@ class App extends React.Component {
         });
     })
     .catch(err => {
+      console.log('Error loading form:', err);
       this.setState({
         err,
         loaded: true
@@ -111,15 +119,31 @@ class App extends React.Component {
   render() {
     const {loaded, err} = this.state;
     return (
-      <div className="App">
-        {loaded && !err ? <PotluckForm {...this.state} uploadForm={this.uploadForm}/> : <CircularProgress/>}
+      <div className="App" style={styles.container}>
+        {!loaded && <CircularProgress/>}
+        {loaded && !err && <PotluckForm {...this.state} uploadForm={this.uploadForm}/> }
         {err && <div>
             <h1>Error loading form</h1>
-            <div>{err}</div>
+            <div>{err.toString()}</div>
           </div>}
       </div>
     );
 };
+};
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px'
+  },
+  header: {
+    marginTop: '20px',
+    fontSize: '20px',
+    fontWeight: 'bold'
+  }
 };
 
 export default App;
