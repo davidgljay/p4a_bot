@@ -32,6 +32,10 @@ async function lookupRegistration(id, client_org) {
           registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
           registrationFields: clientConfig[client_org].registrations_db.fields,
         };
+        const findObjectById = notionClient.findObjectById;
+        const fields = config.registrationFields;
+
+
         // TODO: Implement as a Promise.all to improve responsiveness
         const registration = await notionClient.get(id);
         const properties = registration.properties;
@@ -48,16 +52,18 @@ async function lookupRegistration(id, client_org) {
         let event_registrations = [];
         for (let i = 0; i < event_registrations_raw.length; i++) {
             const event_registration = event_registrations_raw[i];
-            if (notionClient.findObjectById(event_registration.properties, config.registrationFields.status).select.name !== 'accepted') {
+            const reg_properties = event_registration.properties;
+
+            if (findObjectById(reg_properties, fields.status).select.name !== 'accepted') {
                 continue;
             }
             event_registrations.push({
-                status: notionClient.findObjectById(event_registration.properties, config.registrationFields.status).select.name,
-                name: event_registration.properties['Name'].formula.string,
+                status: findObjectById(reg_properties, fields.status).select.name,
+                name: findObjectById(reg_properties, fields.name).formula.string,
                 is_user: event_registration.id.replace(/-/g, '') === id,
-                dish_text: event_registration.properties['Dish'].rich_text.length > 0 ? event_registration.properties['Dish'].rich_text[0].text.content : null,
-                dish_type: event_registration.properties['Dish Type'].select ? event_registration.properties['Dish Type'].select.name : null,
-                diet_req: event_registration.properties['Dietary Requirements'].rollup.array.length > 0 ? event_registration.properties['Dietary Requirements'].rollup.array[0].rich_text[0].text.content : null,
+                dish_text: findObjectById(reg_properties, fields.dish_text).rich_text.length > 0 ? findObjectById(reg_properties, fields.dish_text).rich_text[0].text.content : null,
+                dish_type: findObjectById(reg_properties, fields.dish_type).select ? findObjectById(reg_properties, fields.dish_type).select.name : null,
+                diet_req: findObjectById(reg_properties, fields.diet_reqs).rollup.array.length > 0 ? findObjectById(reg_properties, fields.diet_reqs).rollup.array[0].rich_text[0].text.content : null,
             });
         }
 
@@ -72,14 +78,14 @@ async function lookupRegistration(id, client_org) {
         // TODO: Update database schema to include all fields so that fields can be called by ID rather than by name.
         const result = {
             id: registration.id,
-            status: notionClient.findObjectById(properties, config.registrationFields.status).select.name,
-            fname: properties['Name'] && properties['Name'].formula.string.split(' ')[0],
-            event_start: properties['Event Start Time'].rollup.array[0].date.start,
-            event_address: properties['Event Location'].rollup.array.length > 0 ? properties['Event Location'].rollup.array[0].rich_text[0].text.content : null,
-            user_contact_id: notionClient.findObjectById(properties,config.registrationFields.contact).relation[0].id,
-            user_diet_req: properties['Dietary Requirements'].rollup.array.length > 0 ? properties['Dietary Requirements'].rollup.array[0].rich_text[0].text.content : null,
-            user_dish_text: properties['Dish'].rich_text.length > 0 ? properties['Dish'].rich_text[0].text.content : null,
-            user_dish_type: properties['Dish Type'].select ? properties['Dish Type'].select.name : null,
+            status: findObjectById(properties, fields.status).select.name,
+            fname: findObjectById(properties, fields.name) && findObjectById(properties, fields.name).formula.string.split(' ')[0],
+            event_start: findObjectById(properties, fields.event_start_time).rollup.array[0].date.start,
+            event_address: findObjectById(properties, fields.event_location).rollup.array.length > 0 ? findObjectById(properties, fields.event_location).rollup.array[0].rich_text[0].text.content : null,
+            user_contact_id: findObjectById(properties,fields.contact).relation[0].id,
+            user_diet_req: findObjectById(properties, fields.diet_reqs).rollup.array.length > 0 ? findObjectById(properties, fields.diet_reqs).rollup.array[0].rich_text[0].text.content : null,
+            user_dish_text: findObjectById(properties, fields.dish_text).rich_text.length > 0 ? findObjectById(properties, fields.dish_text).rich_text[0].text.content : null,
+            user_dish_type: findObjectById(properties, fields.dish_type).select ? findObjectById(properties, fields.dish_type).select.name : null,
             event_registrations,
             dish_types
         };
