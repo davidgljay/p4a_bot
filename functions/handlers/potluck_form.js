@@ -27,7 +27,7 @@ async function potluck_form({client_org, registration_id, user_dish_type, user_d
         
         const registration_updates = {
             'Dish Type': {select: {name: user_dish_type}},
-            'Dish': {rich_text: [{text: {content: user_dish_text}}]},
+            'Dish': {rich_text: [{text: {content: user_dish_text || ''}}]},
             [config.registrationFields.status]: {select: {name: status}},
         }
         const contact_updates = {
