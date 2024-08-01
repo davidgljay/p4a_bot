@@ -24,14 +24,15 @@ async function potluck_form({client_org, registration_id, user_dish_type, user_d
 
         const registration = await notionClient.get(registration_id);
         const contact_id = notionClient.findObjectById(registration.properties, config.registrationFields.contact).relation[0].id;
-        
+        const contact = await notionClient.get(contact_id);
+        console.log(contact);
         const registration_updates = {
-            'Dish Type': {select: {name: user_dish_type}},
-            'Dish': {rich_text: [{text: {content: user_dish_text || ''}}]},
+            [config.registrationFields.dish_type]: {select: {name: user_dish_type}},
+            [config.registrationFields.dish_text]: {rich_text: [{text: {content: user_dish_text || ''}}]},
             [config.registrationFields.status]: {select: {name: status}},
         }
         const contact_updates = {
-            'Dietary Requirements': {rich_text: [{text: {content: user_diet_reqs || ''}}]},
+            [config.contactFields.diet_reqs]: {rich_text: [{text: {content: user_diet_reqs || ''}}]},
         }
     
         //Save the updated registration

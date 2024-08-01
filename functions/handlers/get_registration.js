@@ -75,7 +75,6 @@ async function lookupRegistration(id, client_org) {
             {type: 'nonalcoholic drink', need: 2}
         ]
 
-        // TODO: Update database schema to include all fields so that fields can be called by ID rather than by name.
         const result = {
             id: registration.id,
             status: findObjectById(properties, fields.status).select.name,
