@@ -17,6 +17,7 @@ const initializeNotion = require("./handlers/notion_db_init");
 const { sendScheduledEmails } = require("./handlers/email_response_handler");
 const { lookupRegistration } = require("./handlers/get_registration");
 const { potluck_form } = require("./handlers/potluck_form");
+const { googleAuthUrl, googleAuthCallback } = require("./handlers/google_auth_url");
 
 exports.prepemails = onRequest(async (req, res) => {
   try {
@@ -117,5 +118,38 @@ exports.potluck_form = onRequest(async (req, res) => {
   } catch (error) {
     logger.error("Error uploading form", error);
     res.status(500).send("Error uploading form");
+  }
+});
+
+exports.google_auth = onRequest(async (req, res) => {
+  if (req.method !== "GET") {
+    logger.error("Invalid request method", {structuredData: true});
+    return res.status(400).send("Invalid request method");
+  }
+
+  try {
+    const auth_url = googleAuthUrl();
+    res.redirect(auth_url);
+  } catch (error) {
+    logger.error("Error handling Google auth", error);
+    res.status(500).send("Error handling Google auth");
+  }
+});
+
+exports.google_auth_callback = onRequest(async (req, res) => {
+  if (req.method !== "GET") {
+    logger.error("Invalid request method", {structuredData: true});
+    return res.status(400).send("Invalid request method");
+  }
+
+  try {
+    console.log('Code code:', req.query);
+    const code = req.query.code;
+    // Now that we have the code, use that to acquire tokens.
+    googleAuthCallback(code);
+    res.status(200).send("Success");
+  } catch (error) {
+    logger.error("Error handling Google auth callback", error);
+    res.status(500).send("Error handling Google auth callback");
   }
 });
