@@ -19,12 +19,13 @@ const { lookupRegistration } = require("./handlers/get_registration");
 const { potluck_form } = require("./handlers/potluck_form");
 const { googleAuthUrl, googleAuthCallback } = require("./handlers/google_auth_url");
 const { updateRegistrationStatus } = require("./handlers/event_confirm");
+const { stripAndAddToImpact } = require("./handlers/cc_email_impact");
 
 exports.prepemails = onRequest(async (req, res) => {
   try {
     const emails = await sendScheduledEmails(req.body.client_org);
     res.status(200).send(emails);
-    
+
     const authToken = req.headers["authorization"];
 
 
@@ -144,6 +145,33 @@ exports.event_confirm = onRequest(async (req, res) => {
   } catch (error) {
     logger.error("Error updating registration status", error);
     res.status(500).send("Error updating registration status");
+  }
+});
+
+exports.cc_email_impact = onRequest(async (req, res) => {
+  if (req.method !== "POST") {
+    logger.error("Invalid request method", {structuredData: true});
+    return res.status(400).send("Invalid request method");
+  }
+
+  const authToken = req.headers["authorization"];
+
+  if (authToken !== expectedToken) {
+    logger.error("Unauthorized request", {structuredData: true});
+    return res.status(403).send("Unauthorized");
+  }
+
+  const client_org = req.body.client_org;
+  const email_address = req.body.email_address;
+  const email_body = req.body.email_body;
+  console.log(client_org, email_address, email_body);
+
+  try {
+    stripAndAddToImpact(client_org, email_address, email_body);
+    res.status(200).send("Success");
+  } catch (error) {
+    logger.error("Error updating impact", error);
+    res.status(500).send("Error updating impact");
   }
 });
 

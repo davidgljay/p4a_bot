@@ -33,11 +33,12 @@ class NotionWrapper {
     }
   }
 
-  async create(databaseId, properties) {
+  async create(databaseId, properties, children = []) {
     try {
       const response = await this.client.pages.create({
         parent: {database_id: databaseId},
         properties,
+        children,
       });
 
       return response;
