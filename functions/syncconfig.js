@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { exec } = require('child_process');
 
+
 // Read the .runtimeconfig.json file
 const config = JSON.parse(fs.readFileSync('.runtimeconfig.json', 'utf8'));
 
@@ -23,6 +24,7 @@ function setConfig(path, value) {
 // Function to traverse the config object
 function traverse(obj, path = '') {
   for (const key in obj) {
+    setTimeout(() => {}, 100);
     if (typeof obj[key] === 'object' && obj[key] !== null) {
       // If the value is an object, recurse
       traverse(obj[key], `${path}${key}.`);
