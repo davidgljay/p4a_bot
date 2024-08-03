@@ -18,6 +18,7 @@ const { sendScheduledEmails } = require("./handlers/email_response_handler");
 const { lookupRegistration } = require("./handlers/get_registration");
 const { potluck_form } = require("./handlers/potluck_form");
 const { googleAuthUrl, googleAuthCallback } = require("./handlers/google_auth_url");
+const { updateRegistrationStatus } = require("./handlers/event_confirm");
 
 exports.prepemails = onRequest(async (req, res) => {
   try {
@@ -118,6 +119,25 @@ exports.potluck_form = onRequest(async (req, res) => {
   } catch (error) {
     logger.error("Error uploading form", error);
     res.status(500).send("Error uploading form");
+  }
+});
+
+exports.event_confirm = onRequest(async (req, res) => {
+  if (req.method !== "GET") {
+    logger.error("Invalid request method", {structuredData: true});
+    return res.status(400).send("Invalid request method");
+  }
+
+  const registrationId = req.query.id;
+  const status = req.query.status;
+  const client_org = req.query.client_org;
+
+  try {
+    const result = await updateRegistrationStatus(registrationId, status, client_org);
+    res.status(200).send(result);
+  } catch (error) {
+    logger.error("Error updating registration status", error);
+    res.status(500).send("Error updating registration status");
   }
 });
 
