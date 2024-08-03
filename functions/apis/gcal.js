@@ -1,21 +1,40 @@
 const { google } = require('googleapis');
 
-// Function to update attendees of a Google Calendar event
-async function updateEventAttendees(eventId, attendees) {
+async function getEventAttendees(calendarId, eventId) {
     try {
         // Create a new instance of the Google Calendar API
         const calendar = google.calendar({ version: 'v3' });
 
-        // Construct the request body with the updated attendees
-        const requestBody = {
-            attendees: attendees.map((attendee) => ({ email: attendee })),
-        };
+        // Get the event details
+        const response = await calendar.events.get({
+            calendarId, // Replace with your calendar ID
+            eventId,
+        });
+
+        // Get the attendees from the event
+        const attendees = response.data.attendees;
+
+        console.log('Attendees:', attendees);
+        return attendees;
+    } catch (error) {
+        console.error('Error getting attendees:', error);
+        return [];
+    }
+}
+
+// Function to update attendees of a Google Calendar event
+async function updateEventAttendees(calendarId, eventId, attendees) {
+    try {
+        // Create a new instance of the Google Calendar API
+        const calendar = google.calendar({ version: 'v3' });
 
         // Update the event with the new attendees
         await calendar.events.patch({
-            calendarId: 'primary', // Replace with your calendar ID
+            calendarId, // Replace with your calendar ID
             eventId,
-            requestBody,
+            requestBody: {
+                attendees,
+            },
         });
 
         console.log('Attendees updated successfully!');
@@ -25,28 +44,22 @@ async function updateEventAttendees(eventId, attendees) {
 }
 
 // Function to authenticate with Google Calendar if not already authenticated
-function authenticate() {
+function authenticate(access_token, refresh_token) {
     // Check if the user is already authenticated
     if (!google.auth.getClient()) {
-        // If not authenticated, create a new OAuth2 client
-        const auth = new google.auth.OAuth2(
-            'YOUR_CLIENT_ID',
-            'YOUR_CLIENT_SECRET',
-            'YOUR_REDIRECT_URL'
-        );
+
         // Set the credentials for the client
         auth.setCredentials({
-            access_token: 'YOUR_ACCESS_TOKEN',
-            refresh_token: 'YOUR_REFRESH_TOKEN',
+            access_token: access_token,
+            refresh_token: refresh_token,
         });
         // Set the client for the Google Calendar API
         google.options({ auth });
     }
 }
 
-// Call the authenticate function before using any Google Calendar API methods
-authenticate();
-
 module.exports = {
+    getEventAttendees,
     updateEventAttendees,
+    authenticate
 };
