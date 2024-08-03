@@ -24,8 +24,14 @@ exports.prepemails = onRequest(async (req, res) => {
   try {
     const emails = await sendScheduledEmails(req.body.client_org);
     res.status(200).send(emails);
+    
+    const authToken = req.headers["authorization"];
 
-    //TODO: Add Auth token check
+
+    if (authToken !== expectedToken) {
+      logger.error("Unauthorized request", {structuredData: true});
+      return res.status(403).send("Unauthorized");
+    }
   }
   catch (error) {
     logger.error("Error preparing emails", error);
