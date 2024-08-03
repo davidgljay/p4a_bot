@@ -1,7 +1,7 @@
 emails:
   - days: 7
     hours: 10
-    status: Accepted
+    status: accepted
     subject: Upcoming Potlucks for Change Dinner – See you next week!
     body: > 
       <p>Hi {{fname}},</p>
@@ -25,7 +25,7 @@ emails:
         {{host_name}}</br>
   - days: 1
     hours: 10
-    status: Accepted
+    status: accepted
     subject: Upcoming Potlucks for Change Dinner – See you Tomorrow!
     body: >
       <p>Hi {{fname}},</p>
@@ -90,7 +90,7 @@ emails:
         <!-- HTML !-->
   - days: 0
     hours: 2
-    status: Accepted
+    status: accepted
     subject: Excited to see you at Potluck for Change! Here are directions.
     body: >
       This is the body of the third email.
