@@ -51,6 +51,7 @@ async function handleEventUpdate(event, config, notionClient) {
     [config.eventsFields.description]: {rich_text: [{text: {content: event.description,}}]},
     [config.eventsFields.date]: {date: {start: event.start["Event Begins"]}},
     [config.eventsFields.gcalid]:  {rich_text: [{text: {content: event.id}}]},
+    [config.eventsFields.location]: {rich_text: [{text: {content: event.location}}]},
   }
 
   if (results.length > 0) {
