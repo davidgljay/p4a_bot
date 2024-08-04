@@ -1,5 +1,4 @@
 const { OAuth2Client } = require('google-auth-library');
-const { google } = require('googleapis');
 const clientConfig = require('../config/client_config.js');
 
 const g_auth_config = clientConfig['p4c'].google_oauth;
