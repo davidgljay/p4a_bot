@@ -32,7 +32,7 @@ const DishSignup = ({dishSignups, setUserDishType , userDishType, groupDietReqs,
                 <div style={(styles.buttonContainer)} >{groupDietReqs.length > 0 ? groupDietReqs.map((req, i) => <div style={styles.ml10}>{req}{(i < groupDietReqs.length-1) && " | "}</div>) : <div>None Provided So Far</div>}</div>
                 <div style={styles.header}>What are you planning to bring?</div>
                 <div style={styles.inputContainer}>
-                    <Input sx={styles.input} type="text" placeholder={'Ok to leave blank & decide later'}  value={userDishText} onChange={(e) => setUserDishText(e.target.value)}/>
+                    <Input sx={styles.input} type="text"  value={userDishText} onChange={(e) => setUserDishText(e.target.value)}/>
                 </div>
             </div>
 
