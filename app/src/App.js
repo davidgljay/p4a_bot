@@ -41,9 +41,8 @@ class App extends React.Component {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
 
-    fetch('http://localhost:5001/potlucks4change/us-central1/get_registration?client_org=p4c&id=' + id)
+    fetch('https://get-registration-ewjoe42sfq-uc.a.run.app/?client_org=p4c&id=' + id)
       .then(response => {
-        console.log('Response:', response);
         if (!response.ok) {
           throw new Error('Failed to load form');
         }
@@ -104,7 +103,7 @@ class App extends React.Component {
   uploadForm = (userDishType, userDietReqs, userDishText, status) => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
-    fetch('http://localhost:5001/potlucks4change/us-central1/potluck_form', {
+    fetch('https://potluck-form-ewjoe42sfq-uc.a.run.app', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

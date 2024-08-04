@@ -11,6 +11,7 @@ const functions = require('firebase-functions');
 const {onRequest} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const expectedToken = `Bearer ${process.env.AUTH_TOKEN}`;
+const cors = require('cors')({ origin: true });
 
 const {handleGcalEvent} = require("./handlers/gcal_event_handler");
 const initializeNotion = require("./handlers/notion_db_init");
@@ -97,36 +98,40 @@ exports.initializenotion = onRequest((req, res) => {
 });
 
 exports.get_registration = onRequest(async (req, res) => {
-  if (req.method !== "GET") {
-    logger.error("Invalid request method", {structuredData: true});
-    return res.status(400).send("Invalid request method");
-  }
-
-  const id = req.query.id;
-  const client_org = req.query.client_org;
-
-  try {
-    const registration = await lookupRegistration(id, client_org);
-    res.status(200).send(JSON.stringify(registration));
-  } catch (error) {
-    logger.error("Error looking up registration", error);
-    res.status(500).send("Error looking up registration");
-  }
+  cors(req, res, async() => {
+    if (req.method !== "GET") {
+      logger.error("Invalid request method", {structuredData: true});
+      return res.status(400).send("Invalid request method");
+    }
+  
+    const id = req.query.id;
+    const client_org = req.query.client_org;
+  
+    try {
+      const registration = await lookupRegistration(id, client_org);
+      res.status(200).send(JSON.stringify(registration));
+    } catch (error) {
+      logger.error("Error looking up registration", error);
+      res.status(500).send("Error looking up registration");
+    }  
+  });
 });
 
 exports.potluck_form = onRequest(async (req, res) => {
-  if (req.method !== "POST") {
-    logger.error("Invalid request method", {structuredData: true});
-    return res.status(400).send("Invalid request method");
-  }
+  cors(req, res, async() => {
+    if (req.method !== "POST") {
+      logger.error("Invalid request method", {structuredData: true});
+      return res.status(400).send("Invalid request method");
+    }
 
-  try {
-    await potluck_form(req.body);
-    res.status(200).send("Success");
-  } catch (error) {
-    logger.error("Error uploading form", error);
-    res.status(500).send("Error uploading form");
-  }
+    try {
+      await potluck_form(req.body);
+      res.status(200).send("Success");
+    } catch (error) {
+      logger.error("Error uploading form", error);
+      res.status(500).send("Error uploading form");
+    }
+  });
 });
 
 exports.event_confirm = onRequest(async (req, res) => {

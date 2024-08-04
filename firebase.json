@@ -13,19 +13,16 @@
     }
   ],
   "hosting": {
-    "public": "app/public",
+    "public": "app/build",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
     ]
   },
+  "predeploy": [
+    "yarn --cwd app build"
+  ],
   "postdeploy": [
     "yarn syncconfig"
   ]
