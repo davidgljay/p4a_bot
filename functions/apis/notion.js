@@ -5,11 +5,12 @@ class NotionWrapper {
     this.client = new Client({auth: token});
   }
 
-  async query(databaseId, filter) {
+  async query(databaseId, filter, page_size = 100) {
     try {
       const response = await this.client.databases.query({
         database_id: databaseId,
         filter,
+        page_size
       });
 
       return response.results;
