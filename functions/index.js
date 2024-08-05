@@ -23,17 +23,21 @@ const { updateRegistrationStatus } = require("./handlers/event_confirm");
 const { stripAndAddToImpact } = require("./handlers/cc_email_impact");
 
 exports.prepemails = onRequest(async (req, res) => {
+  const authToken = req.headers["authorization"];
+
+
+  if (authToken !== expectedToken) {
+    logger.error("Unauthorized request", {structuredData: true});
+    return res.status(403).send("Unauthorized");
+  }
   try {
-    const emails = await sendScheduledEmails(req.body.client_org);
-    res.status(200).send(emails);
-
-    const authToken = req.headers["authorization"];
-
-
-    if (authToken !== expectedToken) {
-      logger.error("Unauthorized request", {structuredData: true});
-      return res.status(403).send("Unauthorized");
+    let emails;
+    if (req.body.testmode) {
+      emails = await sendScheduledEmails(req.body.client_org, req.body.testmode);      
+    } else {
+      emails = await sendScheduledEmails(req.body.client_org);      
     }
+    res.status(200).send(emails);
   }
   catch (error) {
     logger.error("Error preparing emails", error);
