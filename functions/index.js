@@ -173,10 +173,10 @@ exports.email_impact = onRequest(async (req, res) => {
   const client_org = req.body.client_org;
   const email_address = req.body.email_address;
   const email_body = req.body.email_body;
-  console.log(client_org, email_address, email_body);
+  const email_subject = req.body.email_subject;
 
   try {
-    stripAndAddToImpact(client_org, email_address, email_body);
+    stripAndAddToImpact(client_org, email_address, email_body, email_subject);
     res.status(200).send("Success");
   } catch (error) {
     logger.error("Error updating impact", error);

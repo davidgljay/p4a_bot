@@ -3,14 +3,14 @@
 const NotionWrapper = require("../apis/notion");
 const config = require('../config/client_config.js');
 
-async function stripAndAddToImpact(client_org, emailAddress, emailBody) {
+async function stripAndAddToImpact(client_org, emailAddress, emailBody, emailSubject) {
     const clientConfig = config[client_org];
     // Strip reply text from email
     const strippedEmail = stripReplyText(emailBody);
     const contactId = await getContactFromEmail(emailAddress, clientConfig);
 
     // Add stripped email to Impact database in Notion
-    await addToImpactDatabase(strippedEmail, contactId, clientConfig);
+    await addToImpactDatabase(strippedEmail, contactId, emailSubject, clientConfig);
 }
 
 function stripReplyText(email) {
@@ -18,7 +18,6 @@ function stripReplyText(email) {
     const lines = email.split('\n');
     const filteredLines = lines.filter(line => !line.startsWith('>'));
     const strippedEmail = filteredLines.join('\n');
-    console.log(strippedEmail);
 
     return strippedEmail;
 }
@@ -46,9 +45,14 @@ async function getContactFromEmail(emailAddress, clientConfig) {
 
 }
 
-async function addToImpactDatabase(email, contactId, clientConfig) {
+async function addToImpactDatabase(email, contactId, emailSubject, clientConfig) {
     console.log('Adding to Impact database:', email, contactId);
-    const summary = email.split('. ')[0];
+    
+    if (emailSubject.includes('Re:')) {
+        summary = email.split('. ')[0];
+    } else {
+        summary = emailSubject;
+    }
     // Add email to Impact database in Notion
     const notionClient = new NotionWrapper(clientConfig.token);
     const properties = {
