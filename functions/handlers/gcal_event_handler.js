@@ -46,7 +46,7 @@ async function handleEventUpdate(event, config, notionClient) {
 
   // Check if event already exists in "events" database
   const results = await notionClient.query(config.eventsDatabaseId, filter);
-  const properties = {
+  let properties = {
     [config.eventsFields.title]: {title: [{text: {content:event.summary}}]},
     [config.eventsFields.description]: {rich_text: [{text: {content: event.description,}}]},
     [config.eventsFields.date]: {date: {start: event.start["Event Begins"]}},
@@ -54,14 +54,29 @@ async function handleEventUpdate(event, config, notionClient) {
     [config.eventsFields.location]: {rich_text: [{text: {content: event.location}}]},
   }
 
+  if (event.host_email) {
+    const filter = {
+      property: config.contactFields.email,
+      email: {
+        equals: event.host_email,
+      },
+    };
+    const new_host = {
+      [config.contactFields.name]: {title: [{text: {content: event.host_name || ""}}],},
+      [config.contactFields.email]: {email: event.host_email},
+    };
+  
+    const host = await notionClient.findOrCreate(config.contactsDatabaseId, filter, new_host);
+    if (host) {
+      properties[config.eventsFields.hosts] = {relation: [{id: host.id}]};
+    };
+  }
+
   if (results.length > 0) {
     const existingEvent = results[0];
-    console.log("Updating existing event", existingEvent.id, event.id)
-
     // Update existing event
     await notionClient.update(existingEvent.id, properties);
   } else {
-    console.log("Creating new event", event.id)
     // Create new event
     await notionClient.create(config.eventsDatabaseId, properties);
   }
@@ -94,7 +109,6 @@ async function handleRegistration(event, config, notionClient) {
 
   // Check if registration already exists in "registrations" database
   const results = await notionClient.query(config.registrationsDatabaseId, registrationFilter);
-  console.log("Got registrations", results)
   const registeredEmails = new Set();
   const emails = event.attendee_emails.split(",");
   const responseStatuses = event.attendee_statuses.split(",");
