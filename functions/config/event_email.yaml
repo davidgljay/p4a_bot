@@ -11,18 +11,18 @@ emails:
         <p><b>Theme</b>: {{title}}</p>
         <p><b>Time</b>: {{start_time}}, {{weekday}} {{month_day}} (We’ll start with some appetizers and get to know each other!)</p>
         <p><b>Address</b>: {{event_location}}</p>
-        <p><b>What to bring</b>: <a href=\"\" target=\"_blank\">Sign up here</a> to share the dish or drinks you would like to contribute to the evening.</p>
+        <p><b>What to bring</b>: <a href=\"https://potlucks4change.web.app/?id={{reg_id}}\" target=\"_blank\">Sign up here</a> to share the dish or drinks you would like to contribute to the evening.</p>
         <p>We’re looking forward to an evening of warm conversation, delicious food, and actionable ideas on how we can collectively support reproductive freedom.
         A couple of quick reminders:</p>
         <ul>
-        <li>If you have any dietary requirements or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. Using <a href=\"\" target=\"
-        _blank\">this link</a>.</li>
-        <li>Parking is available at {{parking_info}}, and the venue is {{transit_info}}.</li>
-        <li>Feel free to reach out {{host_phone}}  if you have any questions or if there’s anything I can do to make your experience more enjoyable.</li>
+        <li>If you have any dietary requirements or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. You can do so using the dish signup link above.</li>
+        {{parking_info}}
+        {{transit_info}}
         </ul>
+        <p>Feel free to reach out to {{host_name}} at {{host_phone}} if you have any questions or if there’s anything I can do to make your experience more enjoyable.</p>
         See you soon at the dinner table for an evening of impactful dialogue and community building!</p>
         <p>Warm regards,</p>
-        {{host_name}}</br>
+        The Potlucks for Change Team</br>
   - days: 1
     hours: 10
     status: accepted
@@ -35,57 +35,19 @@ emails:
         <b>Time</b>: {{start_time}}, {{weekday}} {{month_day}} (We’ll start with some appetizers and get to know each other!)</br>
         <b>Address</b>: {{event_location}}</br>
         <p>We’re looking forward to an evening of warm conversation, delicious food, and actionable ideas on how we can collectively support reproductive freedom.
-        Please confirm you can still attend:</p>
-        <div style=\"display:flex; justify-content:center; width: 100%\">
-            <a style=\"background-color: #2ea44f;
-              border: 1px solid rgba(27, 31, 35, .15);
-              border-radius: 6px;
-              box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
-              box-sizing: border-box;
-              color: #fff;
-              cursor: pointer;
-              font-size: 14px;
-              font-weight: 600;
-              line-height: 20px;
-              padding: 6px 16px;
-              position: relative;
-              text-align: center;
-              text-decoration: none;
-              user-select: none;
-              -webkit-user-select: none;
-              touch-action: manipulation;
-              vertical-align: middle;
-              white-space: nowrap; margin-right: 20px\" href='yes_link'>I can make it!</a>
-            <a style=\"background-color: #848484;
-              border: 1px solid rgba(27, 31, 35, .15);
-              border-radius: 6px;
-              box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
-              box-sizing: border-box;
-              color: #fff;
-              cursor: pointer;
-              font-size: 14px;
-              font-weight: 600;
-              line-height: 20px;
-              padding: 6px 16px;
-              position: relative;
-              text-align: center;
-              text-decoration: none;
-              user-select: none;
-              -webkit-user-select: none;
-              touch-action: manipulation;
-              vertical-align: middle;
-              white-space: nowrap;\" href=\"no_link\">Apologies, something's come up</a>
+        We're excited to see you and want to double-check that you can still attend. If you cannot for any reason, please update the <a href=/"{gcal_link}/" target=/"_blank/">Google Calendar event</a> to let us know as soon as possible.</p>
               </div>
         <p>A couple of quick reminders:</p>
         <ul>
-        <li>If you have any dietary restrictions or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. Using <a href="" target="
+        <li>If you have any dietary restrictions or preferences, please let me know as soon as possible so we can accommodate everyone comfortably. You can do so using <a href=\"https://potlucks4change.web.app/?id={{reg_id}}\" target="
         _blank">this link</a>.</li>
-        <li>Parking is available at {{parking_info}}, and the venue is {{transit_info}}.</li>
-        <li>Feel free to reach out {{host_phone}}  if you have any questions or if there’s anything I can do to make your experience more enjoyable.</li>
+        {{parking_info}}
+        {{transit_info}}
+        <li>Feel free to reach out to {{host name}} at {{host_phone}} if you have any questions or if there’s anything I can do to make your experience more enjoyable.</li>
         </ul>
         <p>See you soon at the dinner table for an evening of impactful dialogue and community building!</p>
         <p>Warm regards,</p>
-        {{host_name}}</br>
+        The Postlucks for Change Team</br>
         
         <!-- HTML !-->
   - days: 0
@@ -93,4 +55,12 @@ emails:
     status: accepted
     subject: Excited to see you at Potluck for Change! Here are directions.
     body: >
-      This is the body of the third email.
+      <p>Hi {{fname}},</p>
+        <p>We're very excited for the Potlucks for Change dinner happening at {{start_time}}! Here are <a href=/"https://www.google.com/maps/search/?api=1&query={{event_location}}/" target=/"_blank/">directions to {{event_location}}</a> in case they are helpful.</p>
+        <ul>
+        {{parking_info}}
+        {{transit_info}}
+        </ul>
+        <p>See you soon for an evening of impactful dialogue and community building!</p>
+        <p>Warm regards,</p>
+        The Potlucks for Change Team</br>

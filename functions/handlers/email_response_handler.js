@@ -6,24 +6,24 @@ const fs = require('fs');
 const path = require('path');
 const clientConfig = require('../config/client_config.js');
 
-async function sendScheduledEmails(client_org) {
+async function sendScheduledEmails(client_org, testmode=false) {
     const yaml = require('js-yaml');
     const templates = yaml.load(fs.readFileSync(path.join(__dirname,'../config/event_email.yaml'), 'utf8'));
     const config = getConfig(client_org);
     let emails = [];
     for (const template of templates.emails) {
-        const events = await checkUpcomingEvents(template.days, template.hours, config);
+        const events = await checkUpcomingEvents(template.days, template.hours, config, testmode);
         let registrations = [];
         for (const event of events) {
             registrations = registrations.concat(await getEventRegistrations(event, config)); 
-            emails = emails.concat(prepEmailsfromRegistrations(registrations, event, template));
+            emails = emails.concat(prepEmailsfromRegistrations(registrations, event, template, testmode));
         }
     }
     return emails;
 }
 
 // Function to check for events coming up in a certain number of days and hours
-async function checkUpcomingEvents(days, hours, config) {
+async function checkUpcomingEvents(days, hours, config, testmode) {
     try {
         // return a string for a date N days and M hours from now
         const date = new Date();
@@ -49,11 +49,25 @@ async function checkUpcomingEvents(days, hours, config) {
                 }
             ]
         };
-        const events = await config.notionClient.query(config.eventsDatabaseId, filter);
-        // Perform any necessary logic with the events
+        let events;
+        if (testmode) {
+            events = await config.notionClient.query(
+                config.eventsDatabaseId,
+                    {
+                    "property": config.eventsFields["date"],
+                    "date": {
+                    "on_or_after": new Date().toISOString()
+                    }
+                }, 
+                2
+            );            
+        } else {
+            events = await config.notionClient.query(config.eventsDatabaseId, filter);
+        }
+            // Perform any necessary logic with the events
         const cleanedEvents = [];
         for (const rawEvent of events) {
-            // console.log('Event:', rawEvent);
+            console.log('Event:', rawEvent);
             const host_name = rawEvent.properties['Host Name'].rollup.array.reduce((acc, current, index, array) => {
                 const name = current.title[0].plain_text;
                 if (array.length == 1) {
@@ -66,14 +80,16 @@ async function checkUpcomingEvents(days, hours, config) {
                 }
             }, '');
 
+            // TODO: Replace fieldnames with lookupByID
             const event = {
                 id: rawEvent.id,
                 title: rawEvent.properties.Title.title[0].text.content,
                 date: rawEvent.properties.Date.date.start,
                 location: rawEvent.properties.Location.rich_text[0].text.content,
                 host_name: host_name,
-                parking_info: rawEvent.properties['Parking Info'].rich_text[0].text.content,
-                transit_info: rawEvent.properties['Transit Info'].rich_text[0].text.content,
+                parking_info: rawEvent.properties['Parking Info'].rich_text[0] ? '<li>' + rawEvent.properties['Parking Info'].rich_text[0].text.content + '</li>' : '',
+                transit_info: rawEvent.properties['Transit Info'].rich_text[0] ? '<li>' + rawEvent.properties['Transit Info'].rich_text[0].text.content + '</li>' : '',
+                gcal_link: rawEvent.properties['Calendar Confirm Link'].formula.string,
             };
             if (rawEvent.properties.Location) {
                 event.location = rawEvent.properties.Location.rich_text[0].plain_text;
@@ -100,20 +116,20 @@ async function getEventRegistrations(event, config) {
     try {
         const registrations = await config.notionClient.query(config.registrationsDatabaseId, filter);
         // Perform any necessary logic with the registrations
-        const emails = [];
+        const preppedRegistrations = [];
         for (const registration of registrations) {
             const fname = /[^ ]+/.exec(registration.properties.Name.formula.string) || ['Friend'];
             // console.log('Registration:', registration.properties.Name.formula, registration.properties.Email.rollup.array);
             if (registration.properties.Email.rollup.array.length > 0) {
-            emails.push({
+            preppedRegistrations.push({
+                id: registration.id,
                 email: registration.properties.Email.rollup.array[0].email, 
                 status: registration.properties.Status.select.name, 
-                fname:fname[0]
+                fname: fname[0],
             });
         }
         }
-        console.log('Emails:', emails);
-        return emails;
+        return preppedRegistrations;
     } catch (error) {
         // Handle error
         console.error('Error getting event registrations:', error);
@@ -121,7 +137,7 @@ async function getEventRegistrations(event, config) {
     }
 }
 
-function prepEmailsfromRegistrations(registrations, event, template) {
+function prepEmailsfromRegistrations(registrations, event, template, testmode) {
     const emails = [];
     for (const registration of registrations) {
         // Fill out the email template with the registration and event data
@@ -144,11 +160,13 @@ function prepEmailsfromRegistrations(registrations, event, template) {
             .replace(/{{parking_info}}/g, event.parking_info)
             .replace(/{{transit_info}}/g, event.transit_info)
             .replace(/{{host_phone}}/g, event.host_phone)
+            .replace(/{{gcal_link}}/g, event.gcal_link)
+            .replace(/{{reg_id}}/g, registration.id);
 
         const subject = template.subject
             .replace('{{title}}', event.title);
         emails.push({
-            to: registration.email,
+            to: testmode ? 'dj@relationalitylab.org' : registration.email,
             subject,
             body,        
         });
