@@ -59,7 +59,7 @@ async function checkUpcomingEvents(days, hours, config, testmode) {
                     "on_or_after": new Date().toISOString()
                     }
                 }, 
-                2
+                1
             );            
         } else {
             events = await config.notionClient.query(config.eventsDatabaseId, filter);
@@ -79,6 +79,8 @@ async function checkUpcomingEvents(days, hours, config, testmode) {
                     return acc + ', ' + name;
                 }
             }, '');
+            //TODO: More elegant handling of phone numbers when there are multiple hosts.
+            const host_phone = rawEvent.properties['Host Phone'].rollup.array.map((phone) => phone.phone_number).join(', ');
 
             // TODO: Replace fieldnames with lookupByID
             const event = {
@@ -87,6 +89,7 @@ async function checkUpcomingEvents(days, hours, config, testmode) {
                 date: rawEvent.properties.Date.date.start,
                 location: rawEvent.properties.Location.rich_text[0].text.content,
                 host_name: host_name,
+                host_phone: host_phone,
                 parking_info: rawEvent.properties['Parking Info'].rich_text[0] ? '<li>' + rawEvent.properties['Parking Info'].rich_text[0].text.content + '</li>' : '',
                 transit_info: rawEvent.properties['Transit Info'].rich_text[0] ? '<li>' + rawEvent.properties['Transit Info'].rich_text[0].text.content + '</li>' : '',
                 gcal_link: rawEvent.properties['Calendar Confirm Link'].formula.string,
@@ -157,6 +160,7 @@ function prepEmailsfromRegistrations(registrations, event, template, testmode) {
             .replace(/{{start_time}}/g, start_time)
             .replace(/{{event_location}}/g, event.location)
             .replace(/{{host_name}}/g, event.host_name)
+            .replace(/{{host_phone}}/g, event.host_phone)
             .replace(/{{parking_info}}/g, event.parking_info)
             .replace(/{{transit_info}}/g, event.transit_info)
             .replace(/{{host_phone}}/g, event.host_phone)
