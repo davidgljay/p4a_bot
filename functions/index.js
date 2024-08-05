@@ -157,7 +157,7 @@ exports.event_confirm = onRequest(async (req, res) => {
   }
 });
 
-exports.cc_email_impact = onRequest(async (req, res) => {
+exports.email_impact = onRequest(async (req, res) => {
   if (req.method !== "POST") {
     logger.error("Invalid request method", {structuredData: true});
     return res.status(400).send("Invalid request method");
