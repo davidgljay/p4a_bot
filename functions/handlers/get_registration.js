@@ -63,7 +63,7 @@ async function lookupRegistration(id, client_org) {
                 is_user: event_registration.id.replace(/-/g, '') === id,
                 dish_text: findObjectById(reg_properties, fields.dish_text).rich_text.length > 0 ? findObjectById(reg_properties, fields.dish_text).rich_text[0].text.content : null,
                 dish_type: findObjectById(reg_properties, fields.dish_type).select ? findObjectById(reg_properties, fields.dish_type).select.name : null,
-                diet_req: findObjectById(reg_properties, fields.diet_reqs).rollup.array.length > 0 ? findObjectById(reg_properties, fields.diet_reqs).rollup.array[0].rich_text[0].text.content : null,
+                diet_req: findObjectById(reg_properties, fields.diet_reqs).rollup.array[0].rich_text.length > 0 ? findObjectById(reg_properties, fields.diet_reqs).rollup.array[0].rich_text[0].text.content : null,
             });
         }
 
@@ -82,7 +82,7 @@ async function lookupRegistration(id, client_org) {
             event_start: findObjectById(properties, fields.event_start_time).rollup.array[0].date.start,
             event_address: findObjectById(properties, fields.event_location).rollup.array.length > 0 ? findObjectById(properties, fields.event_location).rollup.array[0].rich_text[0].text.content : null,
             user_contact_id: findObjectById(properties,fields.contact).relation[0].id,
-            user_diet_req: findObjectById(properties, fields.diet_reqs).rollup.array.length > 0 ? findObjectById(properties, fields.diet_reqs).rollup.array[0].rich_text[0].text.content : null,
+            user_diet_req: findObjectById(properties, fields.diet_reqs).rollup.array[0].rich_text.length > 0 ? findObjectById(properties, fields.diet_reqs).rollup.array[0].rich_text[0].text.content : null,
             user_dish_text: findObjectById(properties, fields.dish_text).rich_text.length > 0 ? findObjectById(properties, fields.dish_text).rich_text[0].text.content : null,
             user_dish_type: findObjectById(properties, fields.dish_type).select ? findObjectById(properties, fields.dish_type).select.name : null,
             event_registrations,
