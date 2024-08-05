@@ -170,7 +170,7 @@ function prepEmailsfromRegistrations(registrations, event, template, testmode) {
         const subject = template.subject
             .replace('{{title}}', event.title);
         emails.push({
-            to: testmode ? 'dj@relationalitylab.org' : registration.email,
+            to: testmode ? clientConfig.test_email : registration.email,
             subject,
             body,        
         });
