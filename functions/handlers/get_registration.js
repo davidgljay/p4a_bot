@@ -54,7 +54,7 @@ async function lookupRegistration(id, client_org) {
             const event_registration = event_registrations_raw[i];
             const reg_properties = event_registration.properties;
 
-            if (findObjectById(reg_properties, fields.status).select.name !== 'accepted') {
+            if (findObjectById(reg_properties, fields.status).select.name === 'declined') {
                 continue;
             }
             event_registrations.push({
