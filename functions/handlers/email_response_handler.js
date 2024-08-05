@@ -46,6 +46,12 @@ async function checkUpcomingEvents(days, hours, config, testmode) {
                   "date": {
                     "on_or_before": hourLaterDateString
                   }
+                },
+                {
+                    "property": config.eventsFields["tags"],
+                    "multi_select": {
+                        "contains": "Send Email"
+                    }
                 }
             ]
         };
@@ -53,14 +59,14 @@ async function checkUpcomingEvents(days, hours, config, testmode) {
         if (testmode) {
             events = await config.notionClient.query(
                 config.eventsDatabaseId,
-                    {
-                    "property": config.eventsFields["date"],
-                    "date": {
-                    "on_or_after": new Date().toISOString()
+                {
+                    "property": config.eventsFields["tags"],
+                    "multi_select": {
+                        "contains": "Send Email"
                     }
                 }, 
                 1
-            );            
+            );        
         } else {
             events = await config.notionClient.query(config.eventsDatabaseId, filter);
         }
