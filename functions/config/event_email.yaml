@@ -35,7 +35,7 @@ emails:
         <p><b>Time</b>: {{start_time}}, {{weekday}} {{month_day}} (We’ll start with some appetizers and get to know each other!)</br></p>
         <p><b>Address</b>: {{event_location}}</br></p>
         <p>We’re looking forward to an evening of warm conversation, delicious food, and actionable ideas on how we can collectively support reproductive freedom.
-        We're excited to see you and want to double-check that you can still attend. If you cannot for any reason, please update the <a href=/"{gcal_link}/" target=/"_blank/">Google Calendar event</a> to let us know as soon as possible.</p>
+        We're excited to see you and want to double-check that you can still attend. If you cannot for any reason, please update the <a href="{{gcal_link}}" target="_blank">Google Calendar event</a> to let us know as soon as possible.</p>
               </div>
         <p>A couple of quick reminders:</p>
         <ul>
