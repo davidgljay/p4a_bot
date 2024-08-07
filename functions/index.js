@@ -21,6 +21,7 @@ const { potluck_form } = require("./handlers/potluck_form");
 const { googleAuthUrl, googleAuthCallback } = require("./handlers/google_auth_url");
 const { updateRegistrationStatus } = require("./handlers/event_confirm");
 const { stripAndAddToImpact } = require("./handlers/cc_email_impact");
+const { createContactsFromEmail } = require("./handlers/cc_to_contact");
 
 exports.prepemails = onRequest(async (req, res) => {
   const authToken = req.headers["authorization"];
@@ -214,5 +215,27 @@ exports.google_auth_callback = onRequest(async (req, res) => {
   } catch (error) {
     logger.error("Error handling Google auth callback", error);
     res.status(500).send("Error handling Google auth callback");
+  }
+});
+
+exports.cc_to_contact = onRequest(async (req, res) => {
+  if (req.method !== "POST") {
+    logger.error("Invalid request method", {structuredData: true});
+    return res.status(400).send("Invalid request method");
+  }
+
+  const authToken = req.headers["authorization"];
+
+  if (authToken !== expectedToken) {
+    logger.error("Unauthorized request", {structuredData: true});
+    return res.status(403).send("Unauthorized");
+  }
+
+  try {
+    await createContactsFromEmail(req.body);
+    res.status(200).send("Success");
+  } catch (error) {
+    logger.error("Error creating contacts from email", error);
+    res.status(500).send("Error creating contacts from email: " + error);
   }
 });
