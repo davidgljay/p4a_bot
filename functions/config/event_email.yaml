@@ -1,4 +1,14 @@
 emails:
+  - days: 14
+    hours: 10
+    status: accepted
+    subject: What dish would you like to bring to Potlucks for Change?
+    body: >
+    <p>Hi {{fname}},</p>
+    <p>Thanks so much for signing up for the Potlucks for Change dinner happening on {{weekday}}, {{month_day}}.</p> 
+    <p>When you get a chance, <a href="https://potlucks4change.web.app/?id={{reg_id}}" target="_blank">please let us know what dish you plan to bring here</a>. You can also list things like allergies to make sure that others attending are aware. </p>
+    <p>Warm Regards,</p>
+    <p>The Potlucks For Change Team</p>
   - days: 7
     hours: 10
     status: accepted
