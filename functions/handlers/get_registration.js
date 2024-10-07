@@ -50,11 +50,12 @@ async function lookupRegistration(id, client_org) {
         };
         const event_registrations_raw = await notionClient.query(config.registrationsDatabaseId, event_filter);
         let event_registrations = [];
+
         for (let i = 0; i < event_registrations_raw.length; i++) {
             const event_registration = event_registrations_raw[i];
             const reg_properties = event_registration.properties;
 
-            if (findObjectById(reg_properties, fields.status).select.name === 'declined') {
+            if (findObjectById(reg_properties, fields.status).select.name === 'declined' || findObjectById(reg_properties, fields.diet_reqs).rollup.array[0] == undefined) {
                 continue;
             }
             event_registrations.push({
