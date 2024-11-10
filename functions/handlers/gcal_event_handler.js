@@ -148,9 +148,10 @@ async function handleRegistration(event, config, notionClient) {
         [config.contactFields.name]: {title: [{text: {content: displayName}}]},
       };
       const contactRecord = await notionClient.findOrCreate(config.contactsDatabaseId, filter, contact);
+      const contactName = notionClient.findObjectById(contactRecord.properties, config.contactFields.name).title[0].text.content;
       // Create new registration
       await notionClient.create(config.registrationsDatabaseId, {
-        [config.registrationFields.title]: {title: [{text: {content: displayName + " - " + event.summary}}]},
+        [config.registrationFields.title]: {title: [{text: {content: contactName + " - " + event.summary}}]},
         [config.registrationFields.contact]: {relation: [{id: contactRecord.id}]},
         [config.registrationFields.event]: {relation:[{id: eventResults[0].id}]},
         [config.registrationFields.status]: {select: {id: config.registrationFields.status_options[responseStatus]}},
