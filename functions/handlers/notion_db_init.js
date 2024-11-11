@@ -4,51 +4,51 @@ const clientConfig = require('../config/client_config.js');
 function initializeNotion(parentPageId, client_org) {
     const notionClient = new NotionWrapper(clientConfig[client_org].token);
     const contactsSchema = {
-            email: {
+            "Email": {
                 type: 'email',
                 email: {}
             },
-            name: {
+            "Name": {
                 type: 'title',
                 title: {}
             },
-            dietary_requirements: {
+            "Dietary Requirements": {
                 type: 'rich_text',
                 rich_text: {}                
             },
-            phone: {
+            "Phone": {
                 type: 'phone_number',
                 phone_number: {}
             },
 
-            location: {
+            "Location": {
                 type: 'rich_text',
                 rich_text: {}
             },
     };
 
     const eventsSchema = {
-            title: {
+            "Title": {
                 type: 'title',
                 title: {}
             },
-            date: {
+            "Date": {
                 type: 'date',
                 date: {}
             },
-            location: {
+            "Location": {
                 type: 'rich_text',
                 rich_text: {}
             },
-            gcalid: {
+            "GCalId": {
                 type: 'rich_text',
                 rich_text: {}
             },
-            description: {
+            "Description": {
                 type: 'rich_text',
                 rich_text: {}
             },
-            tags: {
+            "Tags": {
                 type: 'multi_select',
                 multi_select: {
                     options: [
@@ -56,15 +56,15 @@ function initializeNotion(parentPageId, client_org) {
                     ],
                 }
             },
-            parking_info: {
+            "Parking Info": {
                 type: 'rich_text',
                 rich_text: {}
             },
-            transit_info: {
+            "Transit Info": {
                 type: 'rich_text',
                 rich_text: {}
             },
-            status: {
+            "Status": {
                 type: 'select',
                 select: {
                     options: [
@@ -79,11 +79,11 @@ function initializeNotion(parentPageId, client_org) {
     };
 
     const registrationsSchema = {
-            title: {
+            "Title": {
                 type: 'title',
                 title: {}
             },
-            status: {
+            "Status": {
                 type: 'select',
                 select: {
                     options: [
@@ -98,7 +98,7 @@ function initializeNotion(parentPageId, client_org) {
     };
 
     const eventsRelations = (contacts_database_id) => ({
-        host: {
+        "Host": {
             type: 'relation',
             relation: {
                 database_id: contacts_database_id,
@@ -111,7 +111,7 @@ function initializeNotion(parentPageId, client_org) {
     });
 
     const registrationsRelations =(contacts_database_id, events_database_id) => ({
-        event: {
+        "Event": {
             type: 'relation',
             relation: {
                 database_id: events_database_id,
@@ -121,7 +121,7 @@ function initializeNotion(parentPageId, client_org) {
                 }
             }
         },
-        contact: {
+        "Contact": {
             type: 'relation',
             relation: {
                 database_id: contacts_database_id,
