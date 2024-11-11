@@ -91,93 +91,93 @@ function initializeNotion(parentPageId, client_org) {
         }
     };
 
-    const chaptersSchema = {
-            charter: {
-                type: 'url',
-                url: {},
-            },
-            name: {
-                type: 'title',
-                title: {}
-            }
-    };
+    // const chaptersSchema = {
+    //         charter: {
+    //             type: 'url',
+    //             url: {},
+    //         },
+    //         name: {
+    //             type: 'title',
+    //             title: {}
+    //         }
+    // };
 
-    const chaptersRelations = {
-        leads: {
-            type: 'relation',
-            relation: {
-                database_id: 'contacts_database_id',
-            }
-        },
-        cohosts: {
-            type: 'relation',
-            relation: {
-                database_id: 'contacts_database_id',
-            }
-        },
-        dinners: {
-            type: 'relation',
-            collection_id: 'events_database_id',
-            property_name: 'title',
-        },
-        impact: {
-            type: 'relation',
-            collection_id: 'impact_reports_database_id',
-            property_name: 'title',
-        }
+    // const chaptersRelations = {
+    //     leads: {
+    //         type: 'relation',
+    //         relation: {
+    //             database_id: 'contacts_database_id',
+    //         }
+    //     },
+    //     cohosts: {
+    //         type: 'relation',
+    //         relation: {
+    //             database_id: 'contacts_database_id',
+    //         }
+    //     },
+    //     dinners: {
+    //         type: 'relation',
+    //         collection_id: 'events_database_id',
+    //         property_name: 'title',
+    //     },
+    //     impact: {
+    //         type: 'relation',
+    //         collection_id: 'impact_reports_database_id',
+    //         property_name: 'title',
+    //     }
+    // }
+
+    // const impactReportsSchema = {
+    //         summary: {
+    //             type: 'title',
+    //             title: {}
+    //         },
+    //         created_on: {
+    //             type: "created_time",
+    //             created_time: {}
+    //         },
+    //         tags: {
+    //             type: 'multi_select',
+    //             multi_select: {
+    //                 options: [
+    //                 { name: 'Funding' },
+    //                 { name: 'Conversation' },
+    //                 { name: 'Support' },
+    //                 ],
+    //             }
+    //         }
+    // };
+
+    // const impactReportsRelations = {
+    //     created_by: {
+    //         type: 'relation',
+    //         collection_id: 'contacts_database_id',
+    //         property_name: 'name',
+    //     }
+    // };
+
+
+    function delay(ms, value) {
+        return new Promise(resolve => setTimeout(() => resolve(value), ms));
     }
 
-    const impactReportsSchema = {
-            summary: {
-                type: 'title',
-                title: {}
-            },
-            created_on: {
-                type: "created_time",
-                created_time: {}
-            },
-            tags: {
-                type: 'multi_select',
-                multi_select: {
-                    options: [
-                    { name: 'Funding' },
-                    { name: 'Conversation' },
-                    { name: 'Support' },
-                    ],
-                }
-            }
-    };
-
-    const impactReportsRelations = {
-        created_by: {
-            type: 'relation',
-            collection_id: 'contacts_database_id',
-            property_name: 'name',
-        }
-    };
 
 
-    const chaptersDB = notionClient.createDatabase(parentPageId, 'Chapters', chaptersSchema);
-    const impactReportsDB = notionClient.createDatabase(parentPageId, 'Impact Reports', impactReportsSchema);
-    const contactDB = notionClient.createDatabase(parentPageId, 'Contacts', contactsSchema);
-    const eventsDB = notionClient.createDatabase(parentPageId, 'Events', eventsSchema);
-    const registrationDB = notionClient.createDatabase(parentPageId, 'Registrations', registrationsSchema);
+    const createDatabases = notionClient.createDatabase(parentPageId, 'Contacts', contactsSchema)
+    .then((contacts) => delay(2000, contacts))
+    .then((contacts) => notionClient.createDatabase(parentPageId, 'Events', eventsSchema).then(events => [contacts, events]))
+    .then(data => delay(2000, data))
+    .then(([contacts, events]) => notionClient.createDatabase(parentPageId, 'Registrations', registrationsSchema).then(registrations => [contacts, events, registrations]))
 
-    const promiseArray = [contactDB, eventsDB, registrationDB, chaptersDB, impactReportsDB]
-    var delay = 0
-    const increment = 5000
-    const delayedPromiseArray = []
-    for (promise in promiseArray) {
-        var delayedPromise = new Promise(resolve => setTimeout(resolve, delay)).then(promise)
-        delay += increment
-        console.log(delay)
-        delayedPromiseArray.push(delayedPromise)
-    }
 
-    return Promise.all(delayedPromiseArray).then((databases) => {
-        const [contacts, events, registrations, chapters, impactReports] = databases;
-        return { contacts, events, registrations, chapters, impactReports };
-    })
+    return createDatabases.then((databases) => {
+        const [contacts, events, registrations ] = databases;
+        console.log('Databases created:', databases);
+        return { contacts, events, registrations };
+    }).catch((error) => {
+        console.error('Error creating databases:', error);
+        throw error;
+    });
 }
 
 module.exports = initializeNotion;

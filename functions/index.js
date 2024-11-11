@@ -90,9 +90,10 @@ exports.initializenotion = onRequest((req, res) => {
     return res.status(400).send("No parent page ID provided");
   }
   const parentPageId = req.body.parentPageId;
+  const client_org = req.body.client_org;
 
   try {
-    initializeNotion(parentPageId).then((databases) => {
+    initializeNotion(parentPageId, client_org).then((databases) => {
       logger.info("Notion initialized successfully", databases);
       return res.status(200).send(JSON.stringify(databases));
     }) 
