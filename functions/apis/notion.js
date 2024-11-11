@@ -119,6 +119,19 @@ class NotionWrapper {
     }
   }
 
+  async updateDatabase(databaseId, properties) {
+    try {
+      const response = await this.client.databases.update({
+        database_id: databaseId,
+        properties,
+      });
+      return response;
+    } catch (error) {
+      console.error("Error updating database:", error);
+      throw error;
+    }
+  }
+
   findObjectById(obj, id) {
     for (let key in obj) {
         if (obj[key].id === id) {
