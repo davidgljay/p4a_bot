@@ -158,14 +158,18 @@ class NotionWrapper {
             let db = chapter[database].id;
             let fieldId = chapter[database].fields[field];
             return acc.then((result) => {
-              if (result.length > 0) {
-                return result
-              } else {
-                return this.query(db, {...query, property: fieldId});
-              }
-            });
-          }, Promise.resolve([]))
-      );
+                if (result.length > 0) {
+                  return result
+                } else {
+                  return this.query(db, {...query, property: fieldId})
+                  .then(results => ({
+                    chapte_db_info: chapter,
+                    results
+                  }));
+                }
+              });
+            }, Promise.resolve([]))
+      )
     } catch (error) {
       console.error("Error getting document:", error);
       throw error;
