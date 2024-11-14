@@ -1,7 +1,32 @@
+/**
+ * Initializes Notion databases and sets up relations between them.
+ * 
+ * @param {string} parentPageId - The ID of the parent page where the databases will be created.
+ * @param {string} client_org - The client organization identifier to fetch the corresponding token from the configuration.
+ * 
+ * @returns {Promise<Object>} - A promise that resolves to an object containing the formatted schema of the created databases.
+ * 
+ * @throws {Error} - Throws an error if there is an issue creating or updating the databases.
+ * 
+ * @example
+ * const parentPageId = 'some-page-id';
+ * const client_org = 'some-client-org';
+ * 
+ */
+
+
 const NotionWrapper = require('../apis/notion.js');
 const clientConfig = require('../config/client_config.js');
+const { initializeApp, firestore } = require('firebase-admin');
+
+// function testfb() {
+//     fbadmin.initializeApp(firebaseConfig);
+//     const db = fbadmin.firestore();
+//     db.collection('p4c').doc('test_chapter').set({test: 'test'}).then(() => console.log('Document written'));
+// }
 
 function initializeNotion(parentPageId, client_org) {
+    initializeApp(firebaseConfig);
     const notionClient = new NotionWrapper(clientConfig[client_org].token);
     const contactsSchema = {
             "Email": {
@@ -203,6 +228,17 @@ function initializeNotion(parentPageId, client_org) {
         return new Promise(resolve => setTimeout(() => resolve(value), ms));
     }
 
+    function formatDBSchema(dbInfo) {
+        const schema = {
+            id: dbInfo.id,
+            fields: {}
+        }
+        for (const [key, value] of Object.entries(dbInfo.properties)) {
+            schema.fields[key] = value.id;
+        }
+        return schema;
+    }
+
 
 
     const createDatabases = notionClient.createDatabase(parentPageId, 'Contacts', contactsSchema)
@@ -214,25 +250,24 @@ function initializeNotion(parentPageId, client_org) {
     const addRelations = createDatabases.then((databases) => {
         const [contacts, events, registrations ] = databases;
         return notionClient.updateDatabase(events.id, eventsRelations(contacts.id))
-            .then(response => console.log("Event DB Update", response))
             .then((updatedEvents) => delay(2000, updatedEvents))
             .then((updatedEvents) => notionClient.updateDatabase(registrations.id, registrationsRelations(contacts.id, events.id)).then(updatedRegistrations => [contacts, updatedEvents, updatedRegistrations]))
-    }).catch((error) => {
+    });
+
+    return addRelations.then((databases) => {
+        const [contacts, events, registrations ] = databases;
+        return { 
+            contacts: formatDBSchema(contacts), 
+            events: formatDBSchema(events),
+            registrations: formatDBSchema(registrations)
+        };
+    })
+    .then(schema =>  firestore().collection('p4c').doc(parentPageId).set(schema))
+    .catch((error) => {
         console.error('Error creating databases:', error);
         throw error;
     });
-
-    return addRelations
-        
-
-    // return createDatabases.then((databases) => {
-    //     const [contacts, events, registrations ] = databases;
-    //     console.log('Databases created:', databases);
-    //     return { contacts, events, registrations };
-    // }).catch((error) => {
-    //     console.error('Error creating databases:', error);
-    //     throw error;
-    // });
+    
 }
 
-module.exports = initializeNotion;
+module.exports = {initializeNotion};
