@@ -1,8 +1,10 @@
 const {Client, APIErrorCode} = require("@notionhq/client");
+const {initializeFirebase} = require("../apis/firebase.js");
 
 class NotionWrapper {
   constructor(token) {
     this.client = new Client({auth: token});
+    this.fb = initializeFirebase();
   }
 
   async query(databaseId, filter, page_size = 100) {
@@ -138,7 +140,37 @@ class NotionWrapper {
             return obj[key];
         }
     }
-}
+  }
+
+  async getChapterData(database, field, query) {
+    try {
+      return await this.fb.collection("p4c").get().then(
+        snapshot => {
+          let chapters = [];
+          snapshot.forEach(doc => {
+            chapters.push(doc.data());
+          });
+          return chapters
+        }
+      ).then(chapters => 
+        // Reduce the chapters to a promise chain that searches each chapter's database, return the first hit that is found
+          chapters.reduce((acc, chapter) => {
+            let db = chapter[database].id;
+            let fieldId = chapter[database].fields[field];
+            return acc.then((result) => {
+              if (result.length > 0) {
+                return result
+              } else {
+                return this.query(db, {...query, property: fieldId});
+              }
+            });
+          }, Promise.resolve([]))
+      );
+    } catch (error) {
+      console.error("Error getting document:", error);
+      throw error;
+    }
+  }
 
 }
 
