@@ -6,24 +6,28 @@ const fs = require('fs');
 const path = require('path');
 const clientConfig = require('../config/client_config.js');
 
+//todo: restructure to utilise getChapterData
+
 async function sendScheduledEmails(client_org, testmode=false) {
     const yaml = require('js-yaml');
     const templates = yaml.load(fs.readFileSync(path.join(__dirname,'../config/event_email.yaml'), 'utf8'));
-    const config = getConfig(client_org);
+    const notionClient =  new NotionWrapper(clientConfig[client_org].token)
     let emails = [];
     for (const template of templates.emails) {
-        const events = await checkUpcomingEvents(template.days, template.hours, config, testmode);
+        const cleaned_events_by_chapter = await checkUpcomingEvents(template.days, template.hours, notionClient, testmode);
         let registrations = [];
-        for (const event of events) {
-            registrations = registrations.concat(await getEventRegistrations(event, config)); 
-            emails = emails.concat(prepEmailsfromRegistrations(registrations, event, template, testmode));
+        for (const {events, chapter_config} of cleaned_events_by_chapter) {
+            for (const event of events) {
+                registrations = registrations.concat(await getEventRegistrations(event, chapter_config, notionClient)); 
+                emails = emails.concat(prepEmailsfromRegistrations(registrations, event, template, testmode));
+            }
         }
     }
     return emails;
 }
 
 // Function to check for events coming up in a certain number of days and hours
-async function checkUpcomingEvents(days, hours, config, testmode) {
+async function checkUpcomingEvents(days, hours, notionClient, testmode) {
     try {
         // return a string for a date N days and M hours from now
         const date = new Date();
@@ -33,79 +37,85 @@ async function checkUpcomingEvents(days, hours, config, testmode) {
         const hourLaterDate = new Date(date)
         hourLaterDate.setHours(date.getHours() + 1);
         const hourLaterDateString = hourLaterDate.toISOString();
-        const filter = {
+
+        let filter = ([date, tags]) => ({
             "and": [
                 {
-                  "property": config.eventsFields["date"],
+                  "property": date,
                   "date": {
                     "on_or_after": dateString
                   }
                 },
                 {
-                  "property": config.eventsFields["date"],
+                  "property": date,
                   "date": {
                     "on_or_before": hourLaterDateString
                   }
                 },
                 {
-                    "property": config.eventsFields["tags"],
+                    "property": tags,
                     "multi_select": {
                         "contains": "Send Email"
                     }
                 }
             ]
-        };
-        let events;
+        });
         if (testmode) {
-            events = await config.notionClient.query(
-                config.eventsDatabaseId,
-                {
-                    "property": config.eventsFields["tags"],
-                    "multi_select": {
-                        "contains": "Send Email"
-                    }
-                }, 
-                1
-            );        
-        } else {
-            events = await config.notionClient.query(config.eventsDatabaseId, filter);
-        }
-            // Perform any necessary logic with the events
-        const cleanedEvents = [];
-        for (const rawEvent of events) {
-            console.log('Event:', rawEvent);
-            const host_name = rawEvent.properties['Host Name'].rollup.array.reduce((acc, current, index, array) => {
-                const name = current.title[0].plain_text;
-                if (array.length == 1) {
-                    return name;
-                } else
-                if (index === array.length - 1) {
-                    return acc + ' and ' + name;
-                } else {
-                    return acc + ', ' + name;
+            filter = ([date, tags]) => ({
+                "property": tags,
+                "multi_select": {
+                    "contains": "Send Email"
                 }
-            }, '');
-            //TODO: More elegant handling of phone numbers when there are multiple hosts.
-            const host_phone = rawEvent.properties['Host Phone'].rollup.array.map((phone) => phone.phone_number).join(', ');
-
-            // TODO: Replace fieldnames with lookupByID
-            const event = {
-                id: rawEvent.id,
-                title: rawEvent.properties.Title.title[0].text.content,
-                date: rawEvent.properties.Date.date.start,
-                location: rawEvent.properties.Location.rich_text[0].text.content,
-                host_name: host_name,
-                host_phone: host_phone,
-                parking_info: rawEvent.properties['Parking Info'].rich_text[0] ? '<li>' + rawEvent.properties['Parking Info'].rich_text[0].text.content + '</li>' : '',
-                transit_info: rawEvent.properties['Transit Info'].rich_text[0] ? '<li>' + rawEvent.properties['Transit Info'].rich_text[0].text.content + '</li>' : '',
-                gcal_link: rawEvent.properties['Calendar Confirm Link'].formula.string,
-            };
-            if (rawEvent.properties.Location) {
-                event.location = rawEvent.properties.Location.rich_text[0].plain_text;
-            }
-            cleanedEvents.push(event);
+            });
         }
-        return cleanedEvents;
+        const events_by_chapter = await notionClient.getChapterData('events', ['Date', 'Tags'], filter);
+        const cleaned_events_by_chapter = [];
+        for (const {chapter_config, results} of events_by_chapter) {
+            const cleaned_events = [];
+            for (const rawEvent of results) {
+                const host_name = rawEvent.properties['Host Name'].rollup.array.reduce((acc, current, index, array) => {
+                    const name = current.title[0].plain_text;
+                    if (array.length == 1) {
+                        return name;
+                    } else
+                    if (index === array.length - 1) {
+                        return acc + ' and ' + name;
+                    } else {
+                        return acc + ', ' + name;
+                    }
+                }, '');
+
+                //TODO: Add calendar confirm link, Host Name, Host Phone to chapter instantiation script.
+                //TODO: Add Name to Registration database instantiation script
+
+                //TODO: More elegant handling of phone numbers when there are multiple hosts.
+                const host_phone = rawEvent.properties['Host Phone'].rollup.array.map((phone) => phone.phone_number).join(', ');
+
+                const parking_info_field = chapter_config.events.fields['Parking Info'];
+                const transit_info_field = chapter_config.events.fields['Transit Info'];
+                
+                // const calendar_confirm_link_field = chapter_config.events.fields['Calendar Confirm Link'];
+
+                // TODO: Replace fieldnames with lookupByID
+                const event = {
+                    id: rawEvent.id,
+                    title: rawEvent.properties.Title.title[0].text.content,
+                    date: rawEvent.properties.Date.date.start,
+                    location: rawEvent.properties.Location.rich_text[0].text.content,
+                    host_name: host_name,
+                    host_phone: host_phone,
+                    parking_info: rawEvent.properties['Parking Info'].rich_text[0] ? '<li>' + rawEvent.properties['Parking Info'].rich_text[0].text.content + '</li>' : '',
+                    transit_info: rawEvent.properties['Transit Info'].rich_text[0] ? '<li>' + rawEvent.properties['Transit Info'].rich_text[0].text.content + '</li>' : '',
+                    gcal_link: rawEvent.properties['Calendar Confirm Link'].formula.string,
+                };
+                if (rawEvent.properties.Location) {
+                    event.location = rawEvent.properties.Location.rich_text[0].plain_text;
+                }
+                cleaned_events.push(event);
+            }
+            cleaned_events_by_chapter.push({chapter_config: chapter_config, events: cleaned_events});
+        }
+        return cleaned_events_by_chapter;
     } catch (error) {
         // Handle error
         console.error('Error checking upcoming events:', error);
@@ -114,21 +124,21 @@ async function checkUpcomingEvents(days, hours, config, testmode) {
 }
 
 // Function to return registrations for events
-async function getEventRegistrations(event, config) {
+//TODO: Confirm that registrations are being returned correctly
+async function getEventRegistrations(event, chapter_config, notionClient) {
 
     const filter = {
-        property: config.registrationFields["event"],
+        property: chapter_config.registrations.fields.Event,
         relation: {
             contains: event.id
         }
     };
     try {
-        const registrations = await config.notionClient.query(config.registrationsDatabaseId, filter);
+        const registrations = await notionClient.query(chapter_config.registrations.id, filter);
         // Perform any necessary logic with the registrations
         const preppedRegistrations = [];
         for (const registration of registrations) {
             const fname = /[^ ]+/.exec(registration.properties.Name.formula.string) || ['Friend'];
-            // console.log('Registration:', registration.properties.Name.formula, registration.properties.Email.rollup.array);
             if (registration.properties.Email.rollup.array.length > 0) {
             preppedRegistrations.push({
                 id: registration.id,
@@ -184,20 +194,7 @@ function prepEmailsfromRegistrations(registrations, event, template, testmode) {
     return emails;
 }
 
-function getConfig(client_org) {
-    return {
-        notionClient: new NotionWrapper(clientConfig[client_org].token),
-        eventsDatabaseId: clientConfig[client_org].events_db.id,
-        registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
-        contactsDatabaseId: clientConfig[client_org].contacts_db.id,
-        eventsFields: clientConfig[client_org].events_db.fields,
-        registrationFields: clientConfig[client_org].registrations_db.fields,
-        contactFields: clientConfig[client_org].contacts_db.fields,
-      };
-};
-
 module.exports = {
-    getConfig,
     checkUpcomingEvents,
     getEventRegistrations,
     prepEmailsfromRegistrations,

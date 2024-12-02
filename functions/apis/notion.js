@@ -7,10 +7,10 @@ class NotionWrapper {
     this.fb = initializeFirebase();
   }
 
-  async query(databaseId, filter, page_size = 100) {
+  async query(database_id, filter, page_size = 100) {
     try {
       const response = await this.client.databases.query({
-        database_id: databaseId,
+        database_id,
         filter,
         page_size
       });
@@ -144,7 +144,7 @@ class NotionWrapper {
 
   // Searches all chapter databases for a specific field with a specific value, returns all results and the configuration for the appropriate chapters.
 
-  async getChapterData(database_type, field, query) {
+  async getChapterData(database_type, fields, query_func) {
     try {
       return await this.fb.collection("p4c").get().then(
         snapshot => {
@@ -157,15 +157,17 @@ class NotionWrapper {
       ).then(chapters => 
         // Reduce the chapters to a promise chain that searches each chapter's database_type, return all hits that are found
           chapters.reduce((acc, chapter) => {
+            const fieldIds = fields.map(field => chapter[database_type].fields[field]);
+            const query = query_func(fieldIds);
             let db = chapter[database_type].id;
-            let fieldId = chapter[database_type].fields[field];
-            return acc.then((result) => this.query(db, {...query, property: fieldId})
-                  .then(results => results.push({
-                    chapte_db_info: chapter,
+            console.log(db, query);
+            return acc.then((chapter_results) => this.query(db, query)
+                  .then(results => results.length > 0 ? chapter_results.concat({
+                    chapter_config: chapter,
                     results
-                  })))
+                  }) : chapter_results))
             }, Promise.resolve([]))
-      )
+      );
     } catch (error) {
       console.error("Error getting document:", error);
       throw error;
