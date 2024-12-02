@@ -10,11 +10,16 @@
 //   })
 
 const NotionWrapper = require("../apis/notion.js");
+const FirebaseWrapper = require("../apis/firebase.js");
 const clientConfig = require('../config/client_config.js');
+const { firebase } = require("googleapis/build/src/apis/firebase/index.js");
 
 async function potluck_form({client_org, registration_id, user_dish_type, user_diet_reqs, user_dish_text, status}) {
+
+    //TODO: Update database initalization with Dish Type, Dish Text. Update Contact with Dietary Requirements
     try {
-        const notionClient = new NotionWrapper(clientConfig[client_org].token);
+        const firebaseClient = new FirebaseWrapper();
+        const notionClient = new NotionWrapper(clientConfig[client_org].token, firebaseClient);
         const config = {
           registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
           registrationFields: clientConfig[client_org].registrations_db.fields,
@@ -23,16 +28,17 @@ async function potluck_form({client_org, registration_id, user_dish_type, user_d
         };
 
         const registration = await notionClient.get(registration_id);
-        const contact_id = notionClient.findObjectById(registration.properties, config.registrationFields.contact).relation[0].id;
-        const contact = await notionClient.get(contact_id);
-        console.log(contact);
+        const db_id = registration.parent.database_id;
+        const chapter_dbs = await firebaseClient.getChapterData(client_org);
+        const db_config = chapter_dbs.find(db => db.registrations.id === db_id);
+        const contact_id = notionClient.findObjectById(registration.properties, db_config.registrations.fields.Contact).relation[0].id;
         const registration_updates = {
-            [config.registrationFields.dish_type]: {select: {name: user_dish_type}},
-            [config.registrationFields.dish_text]: {rich_text: [{text: {content: user_dish_text || ''}}]},
-            [config.registrationFields.status]: {select: {name: status}},
+            [db_config.registrations.fields['Dish Type']]: {select: {name: user_dish_type}},
+            [db_config.registrations.fields['Dish Text']]: {rich_text: [{text: {content: user_dish_text || ''}}]},
+            [db_config.registrations.fields['Status']]: {select: {name: status}},
         }
         const contact_updates = {
-            [config.contactFields.diet_reqs]: {rich_text: [{text: {content: user_diet_reqs || ''}}]},
+            [db_config.contacts.fields['Dietary Requirements']]: {rich_text: [{text: {content: user_diet_reqs || ''}}]},
         }
     
         //Save the updated registration
