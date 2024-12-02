@@ -1,10 +1,10 @@
 const {Client, APIErrorCode} = require("@notionhq/client");
-const {initializeFirebase} = require("../apis/firebase.js");
+const FirebaseWrapper = require("../apis/firebase.js");
 
 class NotionWrapper {
   constructor(token) {
     this.client = new Client({auth: token});
-    this.fb = initializeFirebase();
+    this.fb = new FirebaseWrapper();
   }
 
   async query(database_id, filter, page_size = 100) {
@@ -144,17 +144,10 @@ class NotionWrapper {
 
   // Searches all chapter databases for a specific field with a specific value, returns all results and the configuration for the appropriate chapters.
 
-  async queryChapterData(database_type, fields, query_func) {
+  async queryChapterData(database_type, fields, query_func, client_org) {
     try {
-      return await this.fb.collection("p4c").get().then(
-        snapshot => {
-          let chapters = [];
-          snapshot.forEach(doc => {
-            chapters.push(doc.data());
-          });
-          return chapters
-        }
-      ).then(chapters => 
+      return await this.fb.getChapterData(client_org)
+      .then(chapters => 
         // Reduce the chapters to a promise chain that searches each chapter's database_type, return all hits that are found
           chapters.reduce((acc, chapter) => {
             const fieldIds = fields.map(field => chapter[database_type].fields[field]);

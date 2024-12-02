@@ -6,15 +6,13 @@ const fs = require('fs');
 const path = require('path');
 const clientConfig = require('../config/client_config.js');
 
-//todo: restructure to utilise queryChapterData
-
 async function sendScheduledEmails(client_org, testmode=false) {
     const yaml = require('js-yaml');
     const templates = yaml.load(fs.readFileSync(path.join(__dirname,'../config/event_email.yaml'), 'utf8'));
     const notionClient =  new NotionWrapper(clientConfig[client_org].token)
     let emails = [];
     for (const template of templates.emails) {
-        const cleaned_events_by_chapter = await checkUpcomingEvents(template.days, template.hours, notionClient, testmode);
+        const cleaned_events_by_chapter = await checkUpcomingEvents(template.days, template.hours, notionClient, client_org, testmode);
         let registrations = [];
         for (const {events, chapter_config} of cleaned_events_by_chapter) {
             for (const event of events) {
@@ -27,7 +25,7 @@ async function sendScheduledEmails(client_org, testmode=false) {
 }
 
 // Function to check for events coming up in a certain number of days and hours
-async function checkUpcomingEvents(days, hours, notionClient, testmode) {
+async function checkUpcomingEvents(days, hours, notionClient, client_org, testmode) {
     try {
         // return a string for a date N days and M hours from now
         const date = new Date();
@@ -68,7 +66,7 @@ async function checkUpcomingEvents(days, hours, notionClient, testmode) {
                 }
             });
         }
-        const events_by_chapter = await notionClient.queryChapterData('events', ['Date', 'Tags'], filter);
+        const events_by_chapter = await notionClient.queryChapterData('events', ['Date', 'Tags'], filter, client_org);
         const cleaned_events_by_chapter = [];
         for (const {chapter_config, results} of events_by_chapter) {
             const cleaned_events = [];
