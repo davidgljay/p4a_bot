@@ -144,7 +144,7 @@ class NotionWrapper {
 
   // Searches all chapter databases for a specific field with a specific value, returns all results and the configuration for the appropriate chapters.
 
-  async getChapterData(database_type, fields, query_func) {
+  async queryChapterData(database_type, fields, query_func) {
     try {
       return await this.fb.collection("p4c").get().then(
         snapshot => {

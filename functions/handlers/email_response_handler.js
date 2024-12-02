@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const clientConfig = require('../config/client_config.js');
 
-//todo: restructure to utilise getChapterData
+//todo: restructure to utilise queryChapterData
 
 async function sendScheduledEmails(client_org, testmode=false) {
     const yaml = require('js-yaml');
@@ -68,7 +68,7 @@ async function checkUpcomingEvents(days, hours, notionClient, testmode) {
                 }
             });
         }
-        const events_by_chapter = await notionClient.getChapterData('events', ['Date', 'Tags'], filter);
+        const events_by_chapter = await notionClient.queryChapterData('events', ['Date', 'Tags'], filter);
         const cleaned_events_by_chapter = [];
         for (const {chapter_config, results} of events_by_chapter) {
             const cleaned_events = [];
