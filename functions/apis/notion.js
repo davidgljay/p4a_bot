@@ -142,6 +142,8 @@ class NotionWrapper {
     }
   }
 
+  // Searches all chapter databases for a specific field with a specific value, returns all results and the configuration for the appropriate chapters.
+
   async getChapterData(database_type, field, query) {
     try {
       return await this.fb.collection("p4c").get().then(
@@ -153,21 +155,15 @@ class NotionWrapper {
           return chapters
         }
       ).then(chapters => 
-        // Reduce the chapters to a promise chain that searches each chapter's database_type, return the first hit that is found
+        // Reduce the chapters to a promise chain that searches each chapter's database_type, return all hits that are found
           chapters.reduce((acc, chapter) => {
             let db = chapter[database_type].id;
             let fieldId = chapter[database_type].fields[field];
-            return acc.then((result) => {
-                if (result.length > 0) {
-                  return result
-                } else {
-                  return this.query(db, {...query, property: fieldId})
-                  .then(results => ({
+            return acc.then((result) => this.query(db, {...query, property: fieldId})
+                  .then(results => results.push({
                     chapte_db_info: chapter,
                     results
-                  }));
-                }
-              });
+                  })))
             }, Promise.resolve([]))
       )
     } catch (error) {
