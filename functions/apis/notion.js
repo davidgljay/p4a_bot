@@ -160,7 +160,6 @@ class NotionWrapper {
             const fieldIds = fields.map(field => chapter[database_type].fields[field]);
             const query = query_func(fieldIds);
             let db = chapter[database_type].id;
-            console.log(db, query);
             return acc.then((chapter_results) => this.query(db, query)
                   .then(results => results.length > 0 ? chapter_results.concat({
                     chapter_config: chapter,
