@@ -17,7 +17,6 @@
 
 const NotionWrapper = require('../apis/notion.js');
 const clientConfig = require('../config/client_config.js');
-const { initializeApp, firestore } = require('firebase-admin');
 
 // function testfb() {
 //     fbadmin.initializeApp(firebaseConfig);
@@ -26,7 +25,6 @@ const { initializeApp, firestore } = require('firebase-admin');
 // }
 
 function initializeNotion(parentPageId, client_org) {
-    initializeApp(firebaseConfig);
     const notionClient = new NotionWrapper(clientConfig[client_org].token);
     const contactsSchema = {
             "Email": {
@@ -47,6 +45,10 @@ function initializeNotion(parentPageId, client_org) {
             },
 
             "Location": {
+                type: 'rich_text',
+                rich_text: {}
+            },
+            "Dietary Requirements": {
                 type: 'rich_text',
                 rich_text: {}
             },
@@ -104,22 +106,39 @@ function initializeNotion(parentPageId, client_org) {
     };
 
     const registrationsSchema = {
-            "Title": {
-                type: 'title',
-                title: {}
-            },
-            "Status": {
-                type: 'select',
-                select: {
-                    options: [
-                    { name: 'accepted' },
-                    { name: 'declined' },
-                    { name: 'tentative'},
-                    { name: 'need to invite' },
-                    { name: 'invited' },
-                ],
+        "Title": {
+            type: 'title',
+            title: {}
+        },
+        "Status": {
+            type: 'select',
+            select: {
+                options: [
+                { name: 'accepted' },
+                { name: 'declined' },
+                { name: 'tentative'},
+                { name: 'need to invite' },
+                { name: 'invited' },
+            ],
             }
+        },
+        "Dish Type": {
+            type: 'select',
+            select: {
+                options: [
+                { name: 'salad' },
+                { name: 'entree' },
+                { name: 'dessert' },
+                { name: 'alcoholic dink' },
+                { name: 'nonalcoholic drink' },
+                { name: 'appetizer'}
+            ],
             }
+        },
+        "Dish Text": {
+            type: 'rich_text',
+            rich_text: {}
+        }
     };
 
     const eventsRelations = (contacts_database_id) => ({
@@ -254,15 +273,30 @@ function initializeNotion(parentPageId, client_org) {
             .then((updatedEvents) => notionClient.updateDatabase(registrations.id, registrationsRelations(contacts.id, events.id)).then(updatedRegistrations => [contacts, updatedEvents, updatedRegistrations]))
     });
 
-    return addRelations.then((databases) => {
-        const [contacts, events, registrations ] = databases;
+    const addRollups = addRelations.then(([contacts, events, registrations]) => {
+        return notionClient.updateDatabase(registrations.id, {
+            "Event GCalId": {
+                type: 'rollup',
+                rollup: {
+                    rollup_property_name: 'GCalId',
+                    relation_property_name: 'Event',
+                    relation_property_id: registrations.properties['Event'].id,
+                    rollup_property_id: events.properties['GCalId'].id,
+                    function: 'show_original'
+                }
+            }
+        })
+        .then((updatedRegistrations) => [contacts, events, updatedRegistrations]);
+    });
+
+    return addRollups.then(([contacts, events, registrations ]) => {
         return { 
             contacts: formatDBSchema(contacts), 
             events: formatDBSchema(events),
             registrations: formatDBSchema(registrations)
         };
     })
-    .then(schema =>  firestore().collection('p4c').doc(parentPageId).set(schema))
+    .then(schema =>  notionClient.fb.collection('p4c').doc(parentPageId).set(schema))
     .catch((error) => {
         console.error('Error creating databases:', error);
         throw error;
