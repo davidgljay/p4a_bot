@@ -15,8 +15,7 @@ const clientConfig = require('../config/client_config.js');
 const { firebase } = require("googleapis/build/src/apis/firebase/index.js");
 
 async function potluck_form({client_org, registration_id, user_dish_type, user_diet_reqs, user_dish_text, status}) {
-
-    //TODO: Update database initalization with Dish Type, Dish Text. Update Contact with Dietary Requirements
+    
     try {
         const firebaseClient = new FirebaseWrapper();
         const notionClient = new NotionWrapper(clientConfig[client_org].token, firebaseClient);
