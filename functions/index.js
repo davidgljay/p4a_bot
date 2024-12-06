@@ -14,7 +14,7 @@ const expectedToken = `Bearer ${process.env.AUTH_TOKEN}`;
 const cors = require('cors')({ origin: true });
 
 const {handleGcalEvent} = require("./handlers/gcal_event_handler");
-const initializeNotion = require("./handlers/notion_db_init");
+const { initializeNotion } = require("./handlers/notion_db_init");
 const { sendScheduledEmails } = require("./handlers/email_response_handler");
 const { lookupRegistration } = require("./handlers/get_registration");
 const { potluck_form } = require("./handlers/potluck_form");
