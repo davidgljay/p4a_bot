@@ -2,9 +2,9 @@ const {Client, APIErrorCode} = require("@notionhq/client");
 const FirebaseWrapper = require("../apis/firebase.js");
 
 class NotionWrapper {
-  constructor(token, fb = new FirebaseWrapper()) {
+  constructor(token, firebaseClient = new FirebaseWrapper()) {
     this.client = new Client({auth: token});
-    this.fb = fb;
+    this.fb = firebaseClient.fb;
   }
 
   async query(database_id, filter, page_size = 100) {
