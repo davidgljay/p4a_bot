@@ -30,6 +30,10 @@ class FirebaseWrapper {
             }
         )
     }
+
+    async getChapterById(client_org, id) {
+        return await this.fb.collection(client_org).get(id)
+    }
 }
 
 module.exports = FirebaseWrapper;
