@@ -40,7 +40,7 @@ async function handleGcalEvent(event, client_org) {
 
 // Function to check and create/update event in "events" database
 async function handleEventUpdate(event, notionClient, client_org) {
-  const filter = ([gcalid]) => ({
+  const eventFilter = ([gcalid]) => ({
     property: gcalid,
     rich_text: {
       equals: event.id,
@@ -48,44 +48,43 @@ async function handleEventUpdate(event, notionClient, client_org) {
   });
 
   // Check if event already exists in "events" database
-  const {chapter_config, results} = await notionClient.queryChapterData('events', ['GCalId'], filter, client_org);
-  //TODO: Test if event exists, if not check for host, if no host then abort.
+  const eventQueryResults = await notionClient.queryChapterData('events', ['GCalId'], eventFilter, client_org);
 
-  let properties = {
+  const emailFilter = ([email]) => ({
+    properties: email,
+    email: {
+      equals: event.host_email
+    },
+  });
+
+  const hostQueryResults = await notionClient.queryChapterData('contacts', ['Email'], emailFilter, client_org);
+
+  if (hostQueryResults.length == 0) {
+    return new Error("Host and event not found.");
+  };
+
+  const chapter_config = hostQueryResults.chapter_config
+  const eventsDatabaseId = chapter_config.events.id;
+  
+  //If not, get the chapter of the host and create a new event there. If there is no host then throw an error.
+  if (eventQueryResults.length == 0) {
+
+    const results = await notionClient.create(eventsDatabaseId, formatProperties(chapter_config, event, hostQueryResults.results[0]));
+  } else {
+    const results = eventQueryResults.results;
+    await notionClient.update(eventsDatabaseId, formatProperties(chapter_config, event, hostQueryResults.results[0]));
+  }
+}
+
+
+function formatProperties (chapter_config, event, host) {
+  return {
     [chapter_config.events.fields.Title]: {title: [{text: {content:event.summary}}]},
     [chapter_config.events.fields.Description]: {rich_text: [{text: {content: event.description,}}]},
     [chapter_config.events.fields.Date]: {date: {start: event.start["Event Begins"]}},
     [chapter_config.events.fields.GCalId]:  {rich_text: [{text: {content: event.id}}]},
     [chapter_config.events.fields.Location]: {rich_text: [{text: {content: event.location}}]},
-  }
-
-  if (event.host_email) {
-    const filter = {
-      property: chapter_config.contacts.fields.Email,
-      email: {
-        equals: event.host_email,
-      },
-    };
-    const new_host = {
-      [chapter_config.contacts.fields.Name]: {title: [{text: {content: event.host_name || ""}}],},
-      [chapter_config.contacts.fields.Email]: {email: event.host_email},
-    };
-  
-    //TODO: replace with getChapterData. We should assume that the host is in the DB, if not return a 400 error. 
-    //TODO: get config from chapter data
-    const host = await notionClient.findOrCreate(chapter_config.contacts.id, filter, new_host);
-    if (host) {
-      properties[chapter_config.events.fields.Host] = {relation: [{id: host.id}]};
-    };
-  }
-
-  if (results.length > 0) {
-    const existingEvent = results[0];
-    // Update existing event
-    await notionClient.update(existingEvent.id, properties);
-  } else {
-    // Create new event
-    await notionClient.create(config.eventsDatabaseId, properties);
+    [chapter_config.events.fields.Host]: {relation: [{id: host.id}]},
   }
 }
 
@@ -99,8 +98,6 @@ async function handleRegistration(event, notionClient, client_org) {
       equals: event.id,
     },
   });
-
-  //TODO: Update Notion instantiation to include Event GCalId
 
   // Check if event already exists in "events" database
   const {chapter_config, results} = await notionClient.queryChapterData('events', ['GCalId'], eventFilter, client_org);
