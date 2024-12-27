@@ -18,17 +18,20 @@ const clientConfig = require('../config/client_config.js');
 
 async function handleGcalEvent(event, client_org) {
   const notionClient = new NotionWrapper(clientConfig[client_org].token);
-  const config = {
-    eventsDatabaseId: clientConfig[client_org].events_db.id,
-    registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
-    contactsDatabaseId: clientConfig[client_org].contacts_db.id,
-    eventsFields: clientConfig[client_org].events_db.fields,
-    registrationFields: clientConfig[client_org].registrations_db.fields,
-    contactFields: clientConfig[client_org].contacts_db.fields,
-  };
+
+  //TODO: replace config with db from queryChapterData
+
+  // const config = {
+  //   eventsDatabaseId: clientConfig[client_org].events_db.id,
+  //   registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
+  //   contactsDatabaseId: clientConfig[client_org].contacts_db.id,
+  //   eventsFields: clientConfig[client_org].events_db.fields,
+  //   registrationFields: clientConfig[client_org].registrations_db.fields,
+  //   contactFields: clientConfig[client_org].contacts_db.fields,
+  // };
   try {
-    await handleEventUpdate(event, config, notionClient);
-    await handleRegistration(event, config, notionClient);
+    await handleEventUpdate(event, notionClient, client_org);
+    await handleRegistration(event, notionClient, client_org);
   } catch (error) {
     console.error("Error handling event and registration", error);
     throw error;
@@ -36,39 +39,43 @@ async function handleGcalEvent(event, client_org) {
 }
 
 // Function to check and create/update event in "events" database
-async function handleEventUpdate(event, config, notionClient) {
-  const filter = {
-    property: config.eventsFields.gcalid,
+async function handleEventUpdate(event, notionClient, client_org) {
+  const filter = ([gcalid]) => ({
+    property: gcalid,
     rich_text: {
       equals: event.id,
     },
-  };
+  });
 
   // Check if event already exists in "events" database
-  const results = await notionClient.query(config.eventsDatabaseId, filter);
+  const {chapter_config, results} = await notionClient.queryChapterData('events', ['GCalId'], filter, client_org);
+  //TODO: Test if event exists, if not check for host, if no host then abort.
+
   let properties = {
-    [config.eventsFields.title]: {title: [{text: {content:event.summary}}]},
-    [config.eventsFields.description]: {rich_text: [{text: {content: event.description,}}]},
-    [config.eventsFields.date]: {date: {start: event.start["Event Begins"]}},
-    [config.eventsFields.gcalid]:  {rich_text: [{text: {content: event.id}}]},
-    [config.eventsFields.location]: {rich_text: [{text: {content: event.location}}]},
+    [chapter_config.events.fields.Title]: {title: [{text: {content:event.summary}}]},
+    [chapter_config.events.fields.Description]: {rich_text: [{text: {content: event.description,}}]},
+    [chapter_config.events.fields.Date]: {date: {start: event.start["Event Begins"]}},
+    [chapter_config.events.fields.GCalId]:  {rich_text: [{text: {content: event.id}}]},
+    [chapter_config.events.fields.Location]: {rich_text: [{text: {content: event.location}}]},
   }
 
   if (event.host_email) {
     const filter = {
-      property: config.contactFields.email,
+      property: chapter_config.contacts.fields.Email,
       email: {
         equals: event.host_email,
       },
     };
     const new_host = {
-      [config.contactFields.name]: {title: [{text: {content: event.host_name || ""}}],},
-      [config.contactFields.email]: {email: event.host_email},
+      [chapter_config.contacts.fields.Name]: {title: [{text: {content: event.host_name || ""}}],},
+      [chapter_config.contacts.fields.Email]: {email: event.host_email},
     };
   
-    const host = await notionClient.findOrCreate(config.contactsDatabaseId, filter, new_host);
+    //TODO: replace with getChapterData. We should assume that the host is in the DB, if not return a 400 error. 
+    //TODO: get config from chapter data
+    const host = await notionClient.findOrCreate(chapter_config.contacts.id, filter, new_host);
     if (host) {
-      properties[config.eventsFields.hosts] = {relation: [{id: host.id}]};
+      properties[chapter_config.events.fields.Host] = {relation: [{id: host.id}]};
     };
   }
 
@@ -84,20 +91,22 @@ async function handleEventUpdate(event, config, notionClient) {
 
 
 // Function to check and create/update registrations in "registrations" database
-async function handleRegistration(event, config, notionClient) {
+async function handleRegistration(event, notionClient, client_org) {
 
-  const eventFilter = {
-    property: config.eventsFields.gcalid,
+  const eventFilter = ([gcalid]) => ({  
+    property: gcalid,
     rich_text: {
       equals: event.id,
     },
-  };
+  });
+
+  //TODO: Update Notion instantiation to include Event GCalId
 
   // Check if event already exists in "events" database
-  const eventResults = await notionClient.query(config.eventsDatabaseId, eventFilter);
+  const {chapter_config, results} = await notionClient.queryChapterData('events', ['GCalId'], eventFilter, client_org);
 
   const registrationFilter = {
-    property: config.registrationFields.event_gcalid,
+    property: chapter_config.registrations.fields['Event GCalId'],
     rollup: {
       any: {
         rich_text: {
@@ -108,7 +117,7 @@ async function handleRegistration(event, config, notionClient) {
   };
 
   // Check if registration already exists in "registrations" database
-  const results = await notionClient.query(config.registrationsDatabaseId, registrationFilter);
+  const registrations = await notionClient.query(chapter_config.registrations.id, registrationFilter);
   const registeredEmails = new Set();
   const emails = event.attendee_emails.split(",");
   const responseStatuses = event.attendee_statuses.split(",");
@@ -120,11 +129,11 @@ async function handleRegistration(event, config, notionClient) {
       const responseStatus = responseStatuses[j];
       if (existingRegistration.properties.Email.rollup.array[0].email == email) {
         registeredEmails.add(email);
-        if (existingRegistration.properties.Status.select.id == config.registrationFields.status_options[responseStatus]) {
+        if (existingRegistration.properties.Status.select.name == responseStatus) {
           continue;
         }
         await notionClient.update(existingRegistration.id, {
-          [config.registrationFields.status]: {select: {id: config.registrationFields.status_options[responseStatus]}},
+          [config.registrations.fields.Status]: {select: {id: responseStatus}},
         });
       }
     }
@@ -138,23 +147,23 @@ async function handleRegistration(event, config, notionClient) {
     if (!registeredEmails.has(email)) {
       // Check if contact already exists in "contacts" database, create it if it doesn't
       const filter = {
-        property: config.contactFields.email,
+        property: chapter_config.contacts.fields.Email,
         email: {
           equals: email,
         },
       };
       const contact = {
-        [config.contactFields.email]: {email: email},
-        [config.contactFields.name]: {title: [{text: {content: displayName}}]},
+        [chapter_config.contacts.fields.Email]: {email: email},
+        [chapter_config.contacts.fields.Name]: {title: [{text: {content: displayName}}]},
       };
-      const contactRecord = await notionClient.findOrCreate(config.contactsDatabaseId, filter, contact);
-      const contactName = notionClient.findObjectById(contactRecord.properties, config.contactFields.name).title[0].text.content;
+      const contactRecord = await notionClient.findOrCreate(chapter_config.contacts.id, filter, contact);
+      const contactName = notionClient.findObjectById(contactRecord.properties, chapter_config.contacts.fields.Name).title[0].text.content;
       // Create new registration
-      await notionClient.create(config.registrationsDatabaseId, {
-        [config.registrationFields.title]: {title: [{text: {content: contactName + " - " + event.summary}}]},
-        [config.registrationFields.contact]: {relation: [{id: contactRecord.id}]},
-        [config.registrationFields.event]: {relation:[{id: eventResults[0].id}]},
-        [config.registrationFields.status]: {select: {id: config.registrationFields.status_options[responseStatus]}},
+      await notionClient.create(chapter_config.registrations.id, {
+        [chapter_config.registrations.fields.Title]: {title: [{text: {content: contactName + " - " + event.summary}}]},
+        [chapter_config.registrations.fields.Contact]: {relation: [{id: contactRecord.id}]},
+        [chapter_config.registrations.fields.Event]: {relation:[{id: eventResults[0].id}]},
+        [chapter_config.registrations.fields.Status]: {select: {name: responseStatus}},
       });
     }
   }
