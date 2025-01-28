@@ -284,6 +284,26 @@ function initializeNotion(parentPageId, client_org) {
                     rollup_property_id: events.properties['GCalId'].id,
                     function: 'show_original'
                 }
+            },
+            "Event Start Time": {
+                type: 'rollup',
+                rollup: {
+                    rollup_property_name: 'Start Time',
+                    relation_property_name: 'Event',
+                    relation_property_id: registrations.properties['Event'].id,
+                    rollup_property_id: events.properties['Start Time'].id,
+                    function: 'show_original'
+                }
+            },
+            "Event Location": {
+                type: 'rollup',
+                rollup: {
+                    rollup_property_name: 'Location',
+                    relation_property_name: 'Event',
+                    relation_property_id: registrations.properties['Event'].id,
+                    rollup_property_id: events.properties['Location'].id,
+                    function: 'show_original'
+                }
             }
         })
         .then((updatedRegistrations) => [contacts, events, updatedRegistrations]);
