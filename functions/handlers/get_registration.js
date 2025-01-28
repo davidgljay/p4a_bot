@@ -59,11 +59,12 @@ async function lookupRegistration(id, client_org) {
             const event_registration = event_registrations_raw[i];
             const reg_properties = event_registration.properties;
 
-            if (findObjectById(reg_properties, fields.Status).select.name === 'declined' || findObjectById(reg_properties, fields['Dietary Requirements']).rollup.array[0] == undefined) {
+
+            if ((findObjectById(reg_properties, fields.Status).select && findObjectById(reg_properties, fields['Dietary Requirements']).select.name === 'declined') || findObjectById(reg_properties, fields['Dietary Requirements']).rollup.array[0] == undefined) {
                 continue;
             }
             event_registrations.push({
-                status: findObjectById(reg_properties, fields.Status).select.name,
+                status: findObjectById(reg_properties, fields.Status).select ? findObjectById(reg_properties, fields.Status).select.name : 'tentative',
                 name: findObjectById(reg_properties, fields.Name).formula.string,
                 is_user: event_registration.id.replace(/-/g, '') === id,
                 dish_text: findObjectById(reg_properties, fields['Dish Text']).rich_text.length > 0 ? findObjectById(reg_properties, fields['Dish Text']).rich_text[0].text.content : null,
@@ -82,7 +83,7 @@ async function lookupRegistration(id, client_org) {
 
         const result = {
             id: registration.id,
-            status: findObjectById(properties, fields.Status).select.name,
+            status: findObjectById(properties, fields.status).select ? findObjectById(properties, fields.Status).select.name : 'tentative',
             fname: findObjectById(properties, fields.Name) && findObjectById(properties, fields.Name).formula.string.split(' ')[0],
             event_start: findObjectById(properties, fields['Event Start Time']).rollup.array[0].date.start,
             event_address: findObjectById(properties, fields['Event Location']).rollup.array.length > 0 ? findObjectById(properties, fields['Event Location']).rollup.array[0].rich_text[0].text.content : null,
