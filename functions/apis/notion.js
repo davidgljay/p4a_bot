@@ -4,7 +4,7 @@ const {initializeFirebase} = require("../apis/firebase.js");
 class NotionWrapper {
   constructor(token) {
     this.client = new Client({auth: token});
-    this.fb = initializeFirebase();
+    // this.fb = initializeFirebase();
   }
 
   async query(databaseId, filter, page_size = 100) {
