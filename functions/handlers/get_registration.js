@@ -55,11 +55,13 @@ async function lookupRegistration(id, client_org) {
             const event_registration = event_registrations_raw[i];
             const reg_properties = event_registration.properties;
 
-            if (findObjectById(reg_properties, fields.status).select.name === 'declined' || findObjectById(reg_properties, fields.diet_reqs).rollup.array[0] == undefined) {
+
+
+            if ((findObjectById(reg_properties, fields.status).select && findObjectById(reg_properties, fields.status).select.name === 'declined') || findObjectById(reg_properties, fields.diet_reqs).rollup.array[0] == undefined) {
                 continue;
             }
             event_registrations.push({
-                status: findObjectById(reg_properties, fields.status).select.name,
+                status: findObjectById(reg_properties, fields.status).select ? findObjectById(reg_properties, fields.status).select.name : 'tentative',
                 name: findObjectById(reg_properties, fields.name).formula.string,
                 is_user: event_registration.id.replace(/-/g, '') === id,
                 dish_text: findObjectById(reg_properties, fields.dish_text).rich_text.length > 0 ? findObjectById(reg_properties, fields.dish_text).rich_text[0].text.content : null,
@@ -78,7 +80,7 @@ async function lookupRegistration(id, client_org) {
 
         const result = {
             id: registration.id,
-            status: findObjectById(properties, fields.status).select.name,
+            status: findObjectById(properties, fields.status).select ? findObjectById(properties, fields.status).select.name : 'tentative',
             fname: findObjectById(properties, fields.name) && findObjectById(properties, fields.name).formula.string.split(' ')[0],
             event_start: findObjectById(properties, fields.event_start_time).rollup.array[0].date.start,
             event_address: findObjectById(properties, fields.event_location).rollup.array.length > 0 ? findObjectById(properties, fields.event_location).rollup.array[0].rich_text[0].text.content : null,
