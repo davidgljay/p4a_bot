@@ -27,13 +27,11 @@ const clientConfig = require('../config/client_config.js');
 // Function to lookup object in "registrations" database
 async function lookupRegistration(id, client_org) {
     try {
-        // Todo: replace with getChapterData
         const notionClient = new NotionWrapper(clientConfig[client_org].token);
         const findObjectById = notionClient.findObjectById;
 
         // TODO: Implement as a Promise.all to improve responsiveness
         const registration = await notionClient.get(id);
-        //TODO: check appopriate format for parent DB id
         const chapter_config = await notionClient.fb.getChapterById(client_org, registration.parent_database_id)
         const fields = chapter_config.registrations.fields;
         const properties = registration.properties;
