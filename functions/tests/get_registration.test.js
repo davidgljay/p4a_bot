@@ -16,7 +16,7 @@ const clientConfig = {
 
 jest.mock('../config/client_config.js', () => (clientConfig));
 
-jest.spyOn(console, 'error').mockImplementation(() => {});
+jest.spyOn(console, 'error').mockImplementation((erorr) => {});
 
 describe("lookupRegistration", () => {
     const client_org = "test_org";
@@ -84,6 +84,55 @@ describe("lookupRegistration", () => {
                     return {select: {name: "Accepted"}};
                 case "Dietary Requirements":
                     return {rollup: {array: [{rich_text: [{text:{content: 'Allergic to peanuts'}}]}]}};
+                case "Event Start Time":
+                    return {rollup: {array: [{date: {start: "2022-01-01"}}]}};
+                case "Event Location":
+                    return {rollup: {array: [{rich_text: [{text: {content: "Event location"}}]}]}};
+                case "Contact":
+                    return {relation: [{id: "contact_id"}]};
+                default:
+                    return {};
+            }
+        });
+        mockNotionWrapper.query.mockResolvedValue(mockEventRegistrations);
+
+        const result = await lookupRegistration(registrationId, client_org);
+
+        expect(mockNotionWrapper.get).toHaveBeenCalledWith(registrationId);
+        expect(mockNotionWrapper.fb.getChapterById).toHaveBeenCalledWith(client_org, mockRegistration.parent_database_id);
+        expect(mockNotionWrapper.query).toHaveBeenCalledWith(
+            clientConfig[client_org].registrations.id,
+            expect.objectContaining({
+                property: mockChapterConfig.registrations.fields.Event,
+                relation: {
+                    contains: expect.any(String),
+                },
+            })
+        );
+
+        expect(result).toEqual(expect.objectContaining({
+            id: registrationId,
+            // Add more expectations based on the returned result
+        }));
+    });
+
+    it("should return the correct registration data when the user's status, dietary requirements, and dish types are all undefined", async () => {
+        mockNotionWrapper.get.mockResolvedValue(mockRegistration);
+        mockNotionWrapper.fb.getChapterById.mockResolvedValue(mockChapterConfig);
+        mockNotionWrapper.findObjectById.mockImplementation((properties, field) => {
+            switch (field) {
+                case "Event":
+                    return {relation: [{id: "event_id"}]};
+                case "Name":
+                    return {formula: {string: "Test User"}};
+                case "Dish Text":
+                    return {rich_text: []};
+                case "Dish Type":
+                    return {select: undefined};
+                case "Status":
+                    return {select: undefined};
+                case "Dietary Requirements":
+                    return {rollup: {array: [{rich_text: []}]}};
                 case "Event Start Time":
                     return {rollup: {array: [{date: {start: "2022-01-01"}}]}};
                 case "Event Location":
