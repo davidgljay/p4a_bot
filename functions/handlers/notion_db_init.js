@@ -304,7 +304,17 @@ function initializeNotion(parentPageId, client_org) {
                     rollup_property_id: events.properties['Location'].id,
                     function: 'show_original'
                 }
-            }
+            },
+            "Dietary Requirements": {
+                type: 'rollup',
+                rollup: {
+                    rollup_property_name: 'Dietary Requirements',
+                    relation_property_name: 'Contact',
+                    relation_property_id: registrations.properties['Contact'].id,
+                    rollup_property_id: contacts.properties['Dietary Requirements'].id,
+                    function: 'show_original'
+                }
+            },
         })
         .then((updatedRegistrations) => [contacts, events, updatedRegistrations]);
     });
