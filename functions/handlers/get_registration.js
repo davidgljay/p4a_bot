@@ -28,12 +28,7 @@ const clientConfig = require('../config/client_config.js');
 async function lookupRegistration(id, client_org) {
     try {
         // Todo: replace with getChapterData
-        //TODO: Add dietary requirements, event start time, event location to registration DB as rollups
         const notionClient = new NotionWrapper(clientConfig[client_org].token);
-        const config = {
-          registrationsDatabaseId: clientConfig[client_org].registrations_db.id,
-          registrationFields: clientConfig[client_org].registrations_db.fields,
-        };
         const findObjectById = notionClient.findObjectById;
 
         // TODO: Implement as a Promise.all to improve responsiveness
@@ -52,24 +47,29 @@ async function lookupRegistration(id, client_org) {
                 contains: event_id,
             },
         };
-        const event_registrations_raw = await notionClient.query(config.registrations.id, event_filter);
+        const event_registrations_raw = await notionClient.query(clientConfig[client_org].registrations.id, event_filter);
         let event_registrations = [];
 
         for (let i = 0; i < event_registrations_raw.length; i++) {
             const event_registration = event_registrations_raw[i];
             const reg_properties = event_registration.properties;
 
+            const status = findObjectById(reg_properties, fields.Status);
+            const dietary_requirements = findObjectById(reg_properties, fields['Dietary Requirements']);
+            const name = findObjectById(reg_properties, fields.Name);
+            const dish_text = findObjectById(reg_properties, fields['Dish Text']);
+            const dish_type = findObjectById(reg_properties, fields['Dish Type']);
 
-            if ((findObjectById(reg_properties, fields.Status).select && findObjectById(reg_properties, fields['Dietary Requirements']).select.name === 'declined') || findObjectById(reg_properties, fields['Dietary Requirements']).rollup.array[0] == undefined) {
+            if ((status.select && status.select.name === 'declined') || dietary_requirements.rollup.array[0] == undefined) {
                 continue;
             }
             event_registrations.push({
-                status: findObjectById(reg_properties, fields.Status).select ? findObjectById(reg_properties, fields.Status).select.name : 'tentative',
-                name: findObjectById(reg_properties, fields.Name).formula.string,
+                status: status.select ? status.select.name : 'tentative',
+                name: name.formula.string,
                 is_user: event_registration.id.replace(/-/g, '') === id,
-                dish_text: findObjectById(reg_properties, fields['Dish Text']).rich_text.length > 0 ? findObjectById(reg_properties, fields['Dish Text']).rich_text[0].text.content : null,
-                dish_type: findObjectById(reg_properties, fields['Dish Type']).select ? findObjectById(reg_properties, fields['Dish Type']).select.name : null,
-                diet_req: findObjectById(reg_properties, fields['Dietary Requirements']).rollup.array[0].rich_text.length > 0 ? findObjectById(reg_properties, fields['Dietary Requirements']).rollup.array[0].rich_text[0].text.content : null,
+                dish_text: dish_text.rich_text.length > 0 ? dish_text.rich_text[0].text.content : null,
+                dish_type: dish_type.select ? dish_type.select.name : null,
+                diet_req: dietary_requirements.rollup.array[0].rich_text.length > 0 ? dietary_requirements.rollup.array[0].rich_text[0].text.content : null,
             });
         }
 
@@ -89,7 +89,7 @@ async function lookupRegistration(id, client_org) {
             event_address: findObjectById(properties, fields['Event Location']).rollup.array.length > 0 ? findObjectById(properties, fields['Event Location']).rollup.array[0].rich_text[0].text.content : null,
             user_contact_id: findObjectById(properties,fields['Contact']).relation[0].id,
             user_diet_req: findObjectById(properties, fields['Dietary Requirements']).rollup.array[0].rich_text.length > 0 ? findObjectById(properties, fields['Dietary Requirements']).rollup.array[0].rich_text[0].text.content : null,
-            user_dish_text: findObjectById(properties, fields['Dish Text']t).rich_text.length > 0 ? findObjectById(properties, fields['Dish Text']t).rich_text[0].text.content : null,
+            user_dish_text: findObjectById(properties, fields['Dish Text']).rich_text.length > 0 ? findObjectById(properties, fields['Dish Text']).rich_text[0].text.content : null,
             user_dish_type: findObjectById(properties, fields['Dish Type']).select ? findObjectById(properties, fields['Dish Type']).select.name : null,
             event_registrations,
             dish_types
@@ -98,7 +98,7 @@ async function lookupRegistration(id, client_org) {
         // Return the resulting object
         return result;
     } catch (error) {
-        console.log('Error looking up registration', error);
+        console.error('Error looking up registration', error);
         // Handle any errors that occur during the lookup
         // ...
     }
