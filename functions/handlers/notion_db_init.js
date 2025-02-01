@@ -288,10 +288,10 @@ function initializeNotion(parentPageId, client_org) {
             "Event Start Time": {
                 type: 'rollup',
                 rollup: {
-                    rollup_property_name: 'Start Time',
+                    rollup_property_name: 'Date',
                     relation_property_name: 'Event',
                     relation_property_id: registrations.properties['Event'].id,
-                    rollup_property_id: events.properties['Start Time'].id,
+                    rollup_property_id: events.properties['Date'].id,
                     function: 'show_original'
                 }
             },
