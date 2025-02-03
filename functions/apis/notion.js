@@ -5,6 +5,7 @@ class NotionWrapper {
   constructor(token, firebaseClient = new FirebaseWrapper()) {
     this.client = new Client({auth: token});
     this.fb = firebaseClient.fb;
+    this.getChapterData = firebaseClient.getChapterData;
   }
 
   async query(database_id, filter, page_size = 100) {
@@ -146,7 +147,7 @@ class NotionWrapper {
 
   async queryChapterData(database_type, fields, query_func, client_org) {
     try {
-      return await this.fb.getChapterData(client_org)
+      return await this.getChapterData(client_org)
       .then(chapters => 
         // Reduce the chapters to a promise chain that searches each chapter's database_type, return all hits that are found
           chapters.reduce((acc, chapter) => {
