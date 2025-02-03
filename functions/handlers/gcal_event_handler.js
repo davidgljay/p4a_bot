@@ -48,12 +48,11 @@ async function handleEventUpdate(event, notionClient, client_org) {
   });
 
   if (!event.host_email) {
-    return new Error("Host email not found.");
+    throw new Error("Host email not found.");
   };
 
   // Check if event already exists in "events" database
   const eventQueryResults = await notionClient.queryChapterData('events', ['GCalId'], eventFilter, client_org);
-
   const emailFilter = ([email]) => ({
     properties: email,
     email: {
@@ -62,21 +61,19 @@ async function handleEventUpdate(event, notionClient, client_org) {
   });
 
   const hostQueryResults = await notionClient.queryChapterData('contacts', ['Email'], emailFilter, client_org);
-
   if (hostQueryResults.length == 0) {
-    return new Error("Host and event not found.");
+    throw new Error("Host not found.");
   };
 
-  const chapter_config = hostQueryResults.chapter_config
+  const chapter_config = hostQueryResults[0].chapter_config;
   const eventsDatabaseId = chapter_config.events.id;
   
   //If not, get the chapter of the host and create a new event there. If there is no host then throw an error.
   if (eventQueryResults.length == 0) {
-
-    const results = await notionClient.create(eventsDatabaseId, formatProperties(chapter_config, event, hostQueryResults.results[0]));
+    const results = await notionClient.create(eventsDatabaseId, formatProperties(chapter_config, event, hostQueryResults[0].results[0]));
   } else {
     const results = eventQueryResults.results;
-    await notionClient.update(eventsDatabaseId, formatProperties(chapter_config, event, hostQueryResults.results[0]));
+    await notionClient.update(eventsDatabaseId, formatProperties(chapter_config, event, hostQueryResults[0].results[0]));
   }
 }
 
@@ -104,7 +101,14 @@ async function handleRegistration(event, notionClient, client_org) {
   });
 
   // Check if event already exists in "events" database
-  const {chapter_config, results} = await notionClient.queryChapterData('events', ['GCalId'], eventFilter, client_org);
+   const eventQueryResults= await notionClient.queryChapterData('events', ['GCalId'], eventFilter, client_org);
+
+  if (!eventQueryResults || eventQueryResults.length == 0) {
+    return new Error('Event not found when creating registration.')
+  }
+
+  const {chapter_config, results} = eventQueryResults[0];
+  
 
   const registrationFilter = {
     property: chapter_config.registrations.fields['Event GCalId'],
@@ -123,8 +127,8 @@ async function handleRegistration(event, notionClient, client_org) {
   const emails = event.attendee_emails.split(",");
   const responseStatuses = event.attendee_statuses.split(",");
   const displayNames = event.attendee_names.split(",");
-  for (let i = 0; i < results.length; i++) {
-    const existingRegistration = results[i];
+  for (let i = 0; i < registrations.length; i++) {
+    const existingRegistration = registrations[i];
     for (let j = 0; j < emails.length; j++) {
       const email = emails[j];
       const responseStatus = responseStatuses[j];
@@ -134,7 +138,7 @@ async function handleRegistration(event, notionClient, client_org) {
           continue;
         }
         await notionClient.update(existingRegistration.id, {
-          [config.registrations.fields.Status]: {select: {id: responseStatus}},
+          [chapter_config.registrations.fields.Status]: {select: {id: responseStatus}},
         });
       }
     }
@@ -163,7 +167,7 @@ async function handleRegistration(event, notionClient, client_org) {
       await notionClient.create(chapter_config.registrations.id, {
         [chapter_config.registrations.fields.Title]: {title: [{text: {content: contactName + " - " + event.summary}}]},
         [chapter_config.registrations.fields.Contact]: {relation: [{id: contactRecord.id}]},
-        [chapter_config.registrations.fields.Event]: {relation:[{id: eventResults[0].id}]},
+        [chapter_config.registrations.fields.Event]: {relation:[{id: results[0].id}]},
         [chapter_config.registrations.fields.Status]: {select: {name: responseStatus}},
       });
     }
