@@ -47,6 +47,10 @@ async function handleEventUpdate(event, notionClient, client_org) {
     },
   });
 
+  if (!event.host_email) {
+    return new Error("Host email not found.");
+  };
+
   // Check if event already exists in "events" database
   const eventQueryResults = await notionClient.queryChapterData('events', ['GCalId'], eventFilter, client_org);
 
