@@ -59,6 +59,8 @@ describe('gcal_event_handler', () => {
 
         expect(notionClient.create).toHaveBeenCalledTimes(1);
         expect(notionClient.create).toHaveBeenCalledWith(clientConfig[client_org].events.id, expect.any(Object));
+        expect(notionClient.queryChapterData).toHaveBeenCalledTimes(2);
+
     });
 
     test('handleEventUpdate should update an existing event if it exists', async () => {

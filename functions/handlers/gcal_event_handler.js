@@ -54,7 +54,7 @@ async function handleEventUpdate(event, notionClient, client_org) {
   // Check if event already exists in "events" database
   const eventQueryResults = await notionClient.queryChapterData('events', ['GCalId'], eventFilter, client_org);
   const emailFilter = ([email]) => ({
-    properties: email,
+    property: email,
     email: {
       equals: event.host_email
     },
@@ -72,7 +72,7 @@ async function handleEventUpdate(event, notionClient, client_org) {
   if (eventQueryResults.length == 0) {
     const results = await notionClient.create(eventsDatabaseId, formatProperties(chapter_config, event, hostQueryResults[0].results[0]));
   } else {
-    const results = eventQueryResults.results;
+    const results = eventQueryResults[0].results;
     await notionClient.update(eventsDatabaseId, formatProperties(chapter_config, event, hostQueryResults[0].results[0]));
   }
 }
