@@ -65,8 +65,8 @@ exports.gcalevent = onRequest(async (req, res) => {
   try {
     await handleGcalEvent(event, client_org);
   } catch (error) {
-    logger.error("Error handling event and registration", error);
-    return res.status(500).send("Error handling event and registration");
+    logger.error("Error handling event and registration", error.message);
+    return res.status(500).send("Error handling event and registration: " + error.message);
   }
   logger.info("Event and registration handled successfully", event);
 
