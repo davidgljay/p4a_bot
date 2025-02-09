@@ -118,6 +118,10 @@ async function handleRegistration(event, config, notionClient) {
     for (let j = 0; j < emails.length; j++) {
       const email = emails[j];
       const responseStatus = responseStatuses[j];
+      // Avoid an error if the email is not present in the registration
+      if (!existingRegistration.properties.Email.rollup.array[0]) {
+        continue;
+      }
       if (existingRegistration.properties.Email.rollup.array[0].email == email) {
         registeredEmails.add(email);
         if (existingRegistration.properties.Status.select.id == config.registrationFields.status_options[responseStatus]) {
