@@ -1,7 +1,7 @@
 emails:
   - days: 14
     hours: 10
-    status: accepted
+    status: accepted,tentative,Invited
     subject: What dish would you like to bring to Potlucks for Change?
     body: >
      <p>Hi {{fname}},</p>
@@ -11,8 +11,8 @@ emails:
       <p>The Potlucks For Change Team</p>
   - days: 7
     hours: 10
-    status: accepted
-    subject: Upcoming Potlucks for Change Dinner – See you next week!
+    status: accepted,tentative,Invited
+    subject: Upcoming Potlucks for Change Dinner – See you next soon!
     body: > 
       <p>Hi {{fname}},</p>
         <p>I hope this email finds you well! I’m just reaching out to remind you of the Potlucks for Change dinner happening this {{weekday}}, {{month_day}}. We’re all set to welcome you at {{event_location}} at {{start_time}}.
@@ -35,7 +35,7 @@ emails:
         The Potlucks for Change Team</br>
   - days: 1
     hours: 10
-    status: accepted
+    status: accepted,tentative,Invited
     subject: Upcoming Potlucks for Change Dinner – See you Tomorrow!
     body: >
       <p>Hi {{fname}},</p>
@@ -62,7 +62,7 @@ emails:
         <!-- HTML !-->
   - days: 0
     hours: 2
-    status: accepted
+    status: accepted,tentative,Invited
     subject: Excited to see you at Potluck for Change! Here are directions.
     body: >
       <p>Hi {{fname}},</p>

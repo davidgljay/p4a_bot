@@ -46,13 +46,13 @@ async function checkUpcomingEvents(days, hours, config, testmode) {
                   "date": {
                     "on_or_before": hourLaterDateString
                   }
-                },
-                {
-                    "property": config.eventsFields["tags"],
-                    "multi_select": {
-                        "contains": "Send Email"
-                    }
                 }
+                // {
+                //     "property": config.eventsFields["tags"],
+                //     "multi_select": {
+                //         "contains": "Send Email"
+                //     }
+                // }
             ]
         };
         let events;
@@ -73,7 +73,6 @@ async function checkUpcomingEvents(days, hours, config, testmode) {
             // Perform any necessary logic with the events
         const cleanedEvents = [];
         for (const rawEvent of events) {
-            console.log('Event:', rawEvent);
             const host_name = rawEvent.properties['Host Name'].rollup.array.reduce((acc, current, index, array) => {
                 const name = current.title[0].plain_text;
                 if (array.length == 1) {
@@ -128,12 +127,11 @@ async function getEventRegistrations(event, config) {
         const preppedRegistrations = [];
         for (const registration of registrations) {
             const fname = /[^ ]+/.exec(registration.properties.Name.formula.string) || ['Friend'];
-            // console.log('Registration:', registration.properties.Name.formula, registration.properties.Email.rollup.array);
             if (registration.properties.Email.rollup.array.length > 0) {
             preppedRegistrations.push({
                 id: registration.id,
                 email: registration.properties.Email.rollup.array[0].email, 
-                status: registration.properties.Status.select.name, 
+                status: registration.properties.Status.select ? registration.properties.Status.select.name : 'Invited', 
                 fname: fname[0],
             });
         }
@@ -150,7 +148,7 @@ function prepEmailsfromRegistrations(registrations, event, template, testmode) {
     const emails = [];
     for (const registration of registrations) {
         // Fill out the email template with the registration and event data
-        if (template.status != registration.status) {
+        if (!template.status.split(',').includes(registration.status)) {
             continue;
         }
         const date = moment.parseZone(event.date)
